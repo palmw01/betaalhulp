@@ -15,6 +15,11 @@ function App() {
   const [result, setResult] = useState<AssessmentResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const handleChange = (data: AssessmentRequest) => {
+    setRequest(data);
+    if (error) setError(null);
+  };
+
   const handleCalculate = () => {
     try {
       setResult(calculatePaymentTerms(request));
@@ -29,7 +34,7 @@ function App() {
     setRequest(createDefaultRequest());
     setResult(null);
     setError(null);
-    setStep('FORM');
+    setStep('INTRO');
   };
 
   const startWizard = () => {
@@ -70,7 +75,7 @@ function App() {
           {step === 'FORM' && (
             <AssessmentForm
               data={request}
-              onChange={setRequest}
+              onChange={handleChange}
               onNext={handleCalculate}
               error={error}
             />

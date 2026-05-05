@@ -93,7 +93,7 @@ function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): Assess
           sourceFile: 'regels/AR-LI-9-1b.md'
         });
         termRationale = 'Voor afwijkende boekjaren wordt de laatste vervaldag gesteld op de laatste dag van de maand (§ 9.1 Leidraad Invordering 2008).';
-      } else if (month <= 11 && termDate < new Date(year, 11, 31)) {
+      } else if (termDate <= new Date(year, 11, 31)) {
         trace.push({
           step: `Verschuiving laatste termijn (Termijn ${i})`,
           result: 'Verschoven naar 31 december (begunstigend beleid)',
@@ -126,6 +126,7 @@ function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): Assess
 
 export function calculatePaymentTerms(request: AssessmentRequest): AssessmentResult {
   if (request.amount <= 0) throw new Error('Bedrag moet groter zijn dan nul.');
+  if (isNaN(request.date.getTime())) throw new Error('Ongeldige datum opgegeven.');
 
   const { type } = request;
   const trace: CalculationStep[] = [];
@@ -133,7 +134,9 @@ export function calculatePaymentTerms(request: AssessmentRequest): AssessmentRes
   trace.push({
     step: 'Vaststellen aanslagtype',
     result: type === 'PROVISIONAL' ? 'Voorlopige aanslag' : 'Normale aanslag',
-    legalBasis: 'Artikel 9, eerste en vijfde lid, IW 1990',
+    legalBasis: type === 'PROVISIONAL'
+      ? 'Artikel 9, vijfde lid, IW 1990'
+      : 'Artikel 9, eerste lid, IW 1990',
     legalText: type === 'PROVISIONAL' ? LEGAL_TEXTS.ART_9_LID_5_VOLZIN_1 : LEGAL_TEXTS.ART_9_LID_1
   });
 

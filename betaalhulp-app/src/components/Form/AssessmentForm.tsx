@@ -9,8 +9,10 @@ interface Props {
 }
 
 function parseDateLocal(value: string): Date {
-  // new Date("YYYY-MM-DD") parseert als UTC; dit parseert als lokale tijd.
-  const [year, month, day] = value.split('-').map(Number);
+  if (!value) return new Date(NaN);
+  const parts = value.split('-').map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return new Date(NaN);
+  const [year, month, day] = parts;
   return new Date(year, month - 1, day);
 }
 
@@ -30,7 +32,11 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
         <select
           id="assessmentType"
           value={data.type}
-          onChange={(e) => onChange({ ...data, type: e.target.value as AssessmentType })}
+          onChange={(e) => onChange({
+            ...data,
+            type: e.target.value as AssessmentType,
+            isCustomBookYear: false,
+          })}
         >
           <option value="NORMAL">Normale aanslag (definitief)</option>
           <option value="PROVISIONAL">Voorlopige aanslag</option>
@@ -43,6 +49,8 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
         <input
           id="assessmentDate"
           type="date"
+          min="1990-06-01"
+          max="2099-12-31"
           value={dateValue}
           onChange={(e) => onChange({ ...data, date: parseDateLocal(e.target.value) })}
         />
@@ -64,17 +72,21 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
         <span className="hint">Het 'totaal te betalen' bedrag van uw aanslagbiljet.</span>
       </div>
 
-      <div className="form-group">
-        <label className="checkbox-label">
-          <input
-            type="checkbox"
-            checked={data.isCustomBookYear}
-            onChange={(e) => onChange({ ...data, isCustomBookYear: e.target.checked })}
-          />
-          Afwijkend boekjaar
-        </label>
-        <span className="hint">Selecteer dit alleen als u een ondernemer bent met een boekjaar dat niet op 1 januari begint.</span>
-      </div>
+      {data.type === 'PROVISIONAL' && (
+        <div className="form-group">
+          <label className="checkbox-label">
+            <input
+              type="checkbox"
+              checked={data.isCustomBookYear}
+              onChange={(e) => onChange({ ...data, isCustomBookYear: e.target.checked })}
+            />
+            Afwijkend boekjaar
+          </label>
+          <span className="hint">
+            Selecteer dit alleen als u een ondernemer bent met een boekjaar dat niet op 1 januari begint.
+          </span>
+        </div>
+      )}
 
       {error && (
         <div className="form-error" role="alert">

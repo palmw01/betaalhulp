@@ -114,6 +114,51 @@ describe('taxEngine', () => {
     })).toThrow('Bedrag moet groter zijn dan nul.');
   });
 
+  it('should throw on invalid date', () => {
+    expect(() => calculatePaymentTerms({
+      type: 'NORMAL',
+      date: new Date(NaN),
+      amount: 1000,
+      isCustomBookYear: false
+    })).toThrow('Ongeldige datum opgegeven.');
+  });
+
+  it('should fallback to Lid 1 for December provisional assessment (numTerms = 0)', () => {
+    const result = calculatePaymentTerms({
+      type: 'PROVISIONAL',
+      date: new Date(2026, 11, 15), // 15 dec 2026
+      amount: 1000,
+      isCustomBookYear: false
+    });
+
+    // 12 - 12 = 0 termijnen -> terugval naar lid 1
+    expect(result.terms).toHaveLength(1);
+    expect(result.legalBasis).toContain('eerste lid');
+
+    // 15 dec + 42 dagen = 26 jan 2027
+    const dueDate = result.terms[0].date;
+    expect(dueDate.getFullYear()).toBe(2027);
+    expect(dueDate.getMonth()).toBe(0); // jan
+    expect(dueDate.getDate()).toBe(26);
+  });
+
+  it('should ignore isCustomBookYear for NORMAL assessment type', () => {
+    const withFlag = calculatePaymentTerms({
+      type: 'NORMAL',
+      date: new Date(2026, 4, 15),
+      amount: 1000,
+      isCustomBookYear: true
+    });
+    const withoutFlag = calculatePaymentTerms({
+      type: 'NORMAL',
+      date: new Date(2026, 4, 15),
+      amount: 1000,
+      isCustomBookYear: false
+    });
+
+    expect(withFlag.terms[0].date.getTime()).toBe(withoutFlag.terms[0].date.getTime());
+  });
+
   it('should correctly distribute rounding remainder to last term', () => {
     const result = calculatePaymentTerms({
       type: 'PROVISIONAL',
