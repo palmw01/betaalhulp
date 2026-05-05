@@ -38,6 +38,9 @@ export function calculatePaymentTerms(request: AssessmentRequest): AssessmentRes
       for (let i = 1; i <= numTerms; i++) {
         let termDate = new Date(date);
         termDate.setMonth(termDate.getMonth() + i);
+        let termRationale = i === 1 
+          ? 'Eerste termijn vervalt één maand na dagtekening (Art. 9 lid 5 IW 1990).' 
+          : 'Vervolgtermijn telkens één maand later (Art. 9 lid 5 IW 1990).';
 
         // LI 2008: Eindejaarsregeling
         if (i === numTerms && month <= 11 && !isCustomBookYear) {
@@ -50,6 +53,7 @@ export function calculatePaymentTerms(request: AssessmentRequest): AssessmentRes
               sourceFile: 'regels/AR-LI-9-1a.md'
             });
             termDate = dec31;
+            termRationale = 'De laatste termijn is verschoven naar 31 december op basis van begunstigend beleid (§ 9.1 Leidraad Invordering 2008).';
           }
         }
 
@@ -62,6 +66,7 @@ export function calculatePaymentTerms(request: AssessmentRequest): AssessmentRes
             legalBasis: '§ 9.1 Leidraad Invordering 2008',
             sourceFile: 'regels/AR-LI-9-1b.md'
           });
+          termRationale = 'Voor afwijkende boekjaren wordt de laatste vervaldag gesteld op de laatste dag van de maand (§ 9.1 Leidraad Invordering 2008).';
         }
 
         const currentAmount = i === numTerms ? Math.round(remaining * 100) / 100 : termAmount;
@@ -71,9 +76,7 @@ export function calculatePaymentTerms(request: AssessmentRequest): AssessmentRes
           date: termDate,
           amount: currentAmount,
           label: `Termijn ${i}`,
-          rationale: i === 1 
-            ? 'Eerste termijn vervalt één maand na dagtekening (Art. 9 lid 5 IW 1990).' 
-            : 'Vervolgtermijn telkens één maand later (Art. 9 lid 5 IW 1990).'
+          rationale: termRationale
         });
       }
 

@@ -62,6 +62,7 @@ describe('taxEngine', () => {
     // Term 2: originally 10 Dec, but LI 2008 moves to 31 Dec
     expect(result.terms[1].date.getMonth()).toBe(11); // Dec
     expect(result.terms[1].date.getDate()).toBe(31);
+    expect(result.terms[1].rationale).toContain('Leidraad Invordering 2008');
   });
 
   it('should apply LI 2008 custom book year rule', () => {
@@ -77,5 +78,6 @@ describe('taxEngine', () => {
     // Last day of Dec (month 11)
     expect(lastTerm.date.getMonth()).toBe(11); 
     expect(lastTerm.date.getDate()).toBe(31); 
+    expect(lastTerm.rationale).toContain('afwijkende boekjaren');
   });
 });
