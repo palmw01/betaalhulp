@@ -1,4 +1,5 @@
 import type { AssessmentRequest, AssessmentResult, PaymentTerm, CalculationStep } from './types';
+import { LEGAL_TEXTS } from './legalTexts';
 
 export function calculatePaymentTerms(request: AssessmentRequest): AssessmentResult {
   const { type, date, amount, isCustomBookYear } = request;
@@ -9,7 +10,8 @@ export function calculatePaymentTerms(request: AssessmentRequest): AssessmentRes
   trace.push({
     step: 'Vaststellen aanslagtype',
     result: type === 'PROVISIONAL' ? 'Voorlopige aanslag' : 'Normale aanslag',
-    legalBasis: 'Artikel 9, eerste en vijfde lid, IW 1990'
+    legalBasis: 'Artikel 9, eerste en vijfde lid, IW 1990',
+    legalText: type === 'PROVISIONAL' ? LEGAL_TEXTS.ART_9_LID_5_VOLZIN_1 : LEGAL_TEXTS.ART_9_LID_1
   });
 
   // LID 5: Voorlopige aanslag in het belastingjaar
@@ -20,6 +22,7 @@ export function calculatePaymentTerms(request: AssessmentRequest): AssessmentRes
       step: 'Berekenen aantal termijnen',
       result: `${numTerms} termijnen mogelijk (12 - maand ${month})`,
       legalBasis: 'Artikel 9, vijfde lid, eerste volzin, IW 1990',
+      legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_1,
       sourceFile: 'begrippen/termijnenberekening-resterende-maanden.md'
     });
 
@@ -32,6 +35,7 @@ export function calculatePaymentTerms(request: AssessmentRequest): AssessmentRes
         step: 'Toepassen termijnregeling',
         result: `Bedrag wordt verdeeld over ${numTerms} gelijke termijnen`,
         legalBasis: 'Artikel 9, vijfde lid, tweede volzin, IW 1990',
+        legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_2,
         sourceFile: 'regels/AR-9-5a.md'
       });
 
@@ -47,9 +51,10 @@ export function calculatePaymentTerms(request: AssessmentRequest): AssessmentRes
           const dec31 = new Date(year, 11, 31);
           if (termDate < dec31) {
             trace.push({
-              step: `Verschuiving laatste termijn (Lid ${i})`,
+              step: `Verschuiving laatste termijn (Termijn ${i})`,
               result: 'Verschoven naar 31 december (begunstigend beleid)',
               legalBasis: '§ 9.1 Leidraad Invordering 2008',
+              legalText: LEGAL_TEXTS.LI_2008_9_1,
               sourceFile: 'regels/AR-LI-9-1a.md'
             });
             termDate = dec31;
@@ -64,6 +69,7 @@ export function calculatePaymentTerms(request: AssessmentRequest): AssessmentRes
             step: `Verschuiving laatste termijn (Afwijkend boekjaar)`,
             result: `Gesteld op laatste dag van de maand: ${termDate.toLocaleDateString()}`,
             legalBasis: '§ 9.1 Leidraad Invordering 2008',
+            legalText: LEGAL_TEXTS.LI_2008_9_1_AFWIJKEND,
             sourceFile: 'regels/AR-LI-9-1b.md'
           });
           termRationale = 'Voor afwijkende boekjaren wordt de laatste vervaldag gesteld op de laatste dag van de maand (§ 9.1 Leidraad Invordering 2008).';
@@ -90,6 +96,7 @@ export function calculatePaymentTerms(request: AssessmentRequest): AssessmentRes
         step: 'Controle aantal termijnen',
         result: 'Slechts 1 termijn berekend -> Terugval naar hoofdregel',
         legalBasis: 'Artikel 9, vijfde lid, derde volzin, IW 1990',
+        legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_3,
         sourceFile: 'begrippen/terugvalregel-lid-1.md'
       });
     }
@@ -103,6 +110,7 @@ export function calculatePaymentTerms(request: AssessmentRequest): AssessmentRes
     step: 'Toepassen hoofdregel',
     result: 'Betalingstermijn van zes weken na dagtekening',
     legalBasis: 'Artikel 9, eerste lid, IW 1990',
+    legalText: LEGAL_TEXTS.ART_9_LID_1,
     sourceFile: 'regels/AR-9-1.md'
   });
 

@@ -18,6 +18,7 @@ export interface CalculationStep {
   step: string;
   result: string;
   legalBasis: string;
+  legalText?: string;
   sourceFile?: string;
 }
 

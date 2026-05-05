@@ -6,6 +6,7 @@ Dit is de front-end applicatie voor het berekenen van betalingstermijnen op basi
 - Invoeren van aanslaggegevens (type, datum, bedrag).
 - Berekenen van betalingstermijnen conform Artikel 9 IW 1990.
 - Tonen van een volledig betalingsschema inclusief juridische onderbouwing (trace).
+- **Directe inzage in wetteksten**: Per berekeningsstap kan de relevante tekst uit de wet of de Leidraad Invordering worden getoond.
 
 ## Ontwikkeling
 

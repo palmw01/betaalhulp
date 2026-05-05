@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { AssessmentResult } from '../../logic/types';
 
 interface Props {
@@ -7,6 +7,8 @@ interface Props {
 }
 
 const PaymentSchedule: React.FC<Props> = ({ result, onBack }) => {
+  const [expandedStep, setExpandedStep] = useState<number | null>(null);
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('nl-NL', {
       day: 'numeric',
@@ -59,12 +61,48 @@ const PaymentSchedule: React.FC<Props> = ({ result, onBack }) => {
         </p>
         <div style={{ marginTop: '15px' }}>
           {result.trace.map((step, index) => (
-            <div key={index} className="trace-step">
-              <div className="trace-label">{step.step}</div>
-              <div style={{ flex: 1 }}>
-                {step.result}
-                <span className="legal-basis-tag">{step.legalBasis}</span>
+            <div key={index} className="trace-step" style={{ display: 'block', marginBottom: '15px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div style={{ flex: 1 }}>
+                  <div className="trace-label" style={{ marginBottom: '4px' }}>{step.step}</div>
+                  <div style={{ fontSize: '1em' }}>{step.result}</div>
+                  <div style={{ marginTop: '4px' }}>
+                    <span className="legal-basis-tag" style={{ margin: 0 }}>{step.legalBasis}</span>
+                    {step.legalText && (
+                      <button 
+                        onClick={() => setExpandedStep(expandedStep === index ? null : index)}
+                        style={{ 
+                          background: 'none', 
+                          border: 'none', 
+                          color: '#01689b', 
+                          textDecoration: 'underline', 
+                          fontSize: '0.85em', 
+                          cursor: 'pointer',
+                          marginLeft: '10px',
+                          padding: 0
+                        }}
+                      >
+                        {expandedStep === index ? 'Verberg wettekst' : 'Toon wettekst'}
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
+              
+              {expandedStep === index && step.legalText && (
+                <div style={{ 
+                  marginTop: '12px', 
+                  padding: '12px 15px', 
+                  backgroundColor: '#f3f6f8', 
+                  borderLeft: '4px solid #01689b',
+                  fontSize: '0.9em',
+                  lineHeight: '1.5',
+                  fontStyle: 'italic',
+                  color: '#333'
+                }}>
+                  {step.legalText}
+                </div>
+              )}
             </div>
           ))}
         </div>

@@ -52,6 +52,7 @@ npm test
 ## 🛠️ Technologieën & Methodiek
 
 - **Legal-as-Code**: Door wetgeving op te breken in atomaire regels (`AR-*`) en begrippen, wordt de logica transparant en controleerbaar.
+- **Explainable Legal Logic**: De applicatie toont niet alleen de uitkomst, maar ook een stapsgewijze verantwoording inclusief de letterlijke tekst van de relevante wetsartikelen en beleidsregels.
 - **Traceability**: De `taxEngine` is zo ontworpen dat elke berekening een "trace" teruggeeft naar de onderliggende juridische grondslag.
 - **Graphify**: Dit project maakt gebruik van `graphify` om relaties tussen wetsteksten, begrippen en regels in kaart te brengen (zie `graphify-out/`).
 
