@@ -1,0 +1,1 @@
+{"nodes": [], "edges": [], "hyperedges": [{"id": "lid_5_payment_logic", "label": "Lid 5 Payment Logic", "nodes": ["ar_9_5a_ar_9_5a", "ar_9_5b_ar_9_5b", "ar_9_5c_ar_9_5c", "ar_9_5d_ar_9_5d", "ar_9_5e_ar_9_5e", "ar_9_5f_ar_9_5f"], "relation": "form", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "regels/index.md"}]}
