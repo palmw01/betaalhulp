@@ -34,7 +34,7 @@ Elke berekening produceert een `trace: CalculationStep[]` — een geordende audi
 - `parseDateLocal` in het formulier parseert `<input type="date">` als lokale tijd, niet UTC — dit voorkomt dat `new Date("YYYY-MM-DD")` een dag terugspringt door de UTC-interpretatie van ISO-strings.
 - `addMonths` corrigeert maandoverflow (bijv. 31 jan + 1 mnd = 28/29 feb, niet 3 mrt).
 
-**Rekennauwkeurigheid:** termijnbedragen worden berekend in integer-centen (`Math.round(amount * 100)`) om drijvende-komma-accumulatie over meerdere termijnen te vermijden. Afrondingsrestant valt op de laatste termijn.
+**Termijnverdeling:** belastingaanslagen luiden in hele euro's (`Math.round(amount)`). Elk termijnbedrag wordt naar boven afgerond op hele euro's (`ceil`), waarna het overschot wordt gecorrigeerd door precies `numHigher = totaal − n × (ceil − 1)` termijnen op het hogere bedrag te houden en de rest op `€1` minder. De som is altijd exact gelijk aan het totaal; termijnen verschillen maximaal €1. Dit is een uitvoeringskeuze — pas het algoritme niet aan zonder ook de tests en de trace-tekst bij te werken.
 
 ### UI-flow (`App.tsx`)
 

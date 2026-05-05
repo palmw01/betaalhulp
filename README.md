@@ -53,7 +53,7 @@ De applicatie implementeert de volgende regels uit Artikel 9 IW 1990 en § 9.1 L
 
 ### Vereisten
 
-- Node.js 18 of hoger
+- Node.js 24 of hoger
 - npm
 
 ### Applicatie starten
@@ -64,7 +64,7 @@ npm install
 npm run dev
 ```
 
-De applicatie is beschikbaar op `http://localhost:5173`.
+De applicatie is beschikbaar op `http://localhost:5173/betaalhulp/`.
 
 ### Bouwen voor productie
 
@@ -93,9 +93,17 @@ npx vitest run
 - Datuminvoer wordt geparsed als **lokale tijd** (niet UTC) om tijdzoneverschuivingen te vermijden bij `<input type="date">`.
 - Maandtellingen bij overflow (bijv. 31 januari + 1 maand) worden gecorrigeerd naar de laatste dag van de doelmaand, conform de wettelijke terminologie "een maand later".
 
-### Rekennauwkeurigheid
+### Termijnverdeling
 
-Termijnbedragen worden berekend in **integer-centen** (`Math.round(amount * 100)`) om drijvende-komma-accumulatiefouten te vermijden. Het afrondingsrestant valt altijd op de laatste termijn.
+Belastingaanslagen luiden in hele euro's. De verdeling werkt als volgt:
+
+1. Bereken het exacte termijnbedrag: `totaal / aantal`
+2. Rond elk termijnbedrag **naar boven** af op hele euro's (`ceil`)
+3. De som overstijgt daarmee het totaal; corrigeer door een aantal termijnen met precies **€1 te verlagen**
+
+De formule is: `numHigher = totaal − n × (ceil − 1)`. De eerste `numHigher` termijnen krijgen het hogere bedrag, de rest `€1` minder. Termijnen verschillen maximaal €1 van elkaar; de som is altijd exact gelijk aan het totaal.
+
+Dit is een uitvoeringskeuze in verlengde van de wet (Art. 9 lid 5, tweede volzin IW 1990).
 
 ### Audit trail
 
