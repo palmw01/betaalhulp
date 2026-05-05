@@ -54,6 +54,7 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
         <input
           id="assessmentAmount"
           type="number"
+          inputMode="decimal"
           min="0.01"
           step="0.01"
           value={data.amount || ''}
@@ -64,12 +65,11 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
       </div>
 
       <div className="form-group">
-        <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+        <label className="checkbox-label">
           <input
             type="checkbox"
             checked={data.isCustomBookYear}
             onChange={(e) => onChange({ ...data, isCustomBookYear: e.target.checked })}
-            style={{ width: 'auto', marginRight: '10px' }}
           />
           Afwijkend boekjaar
         </label>
@@ -82,7 +82,7 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
         </div>
       )}
 
-      <div style={{ marginTop: '40px' }}>
+      <div className="form-actions">
         <button type="submit" className="btn" disabled={!isValid}>
           Bereken betaalschema
         </button>
