@@ -38,23 +38,55 @@ function applyLid1(date: Date, amount: number, trace: CalculationStep[]): Assess
 }
 
 function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): AssessmentResult {
-  const { date, amount, isCustomBookYear } = request;
-  const year = date.getFullYear();
+  const { date, amount, isCustomBookYear, assessmentYear } = request;
+  const dagtekeningYear = date.getFullYear();
+
+  // Kwalificatieconditie: dagtekening moet in het belastingjaar vallen (art. 9 lid 5 IW 1990).
+  // Dagtekening ná het belastingjaar → lid 1 direct van toepassing (niet via terugvalregel).
+  // Dagtekening vóór het belastingjaar → lid 7 (buiten scope van dit hulpmiddel).
+  if (dagtekeningYear !== assessmentYear) {
+    trace.push({
+      step: 'Controle dagtekening-in-vaststellingsjaar',
+      result: dagtekeningYear < assessmentYear
+        ? `Dagtekening (${dagtekeningYear}) ligt vóór het belastingjaar (${assessmentYear}) — lid 7 IW 1990 is van toepassing (niet geïmplementeerd)`
+        : `Dagtekening (${dagtekeningYear}) ligt ná het belastingjaar (${assessmentYear}) — lid 5 is niet van toepassing; hoofdregel lid 1 herneemt`,
+      legalBasis: 'Artikel 9, vijfde lid, IW 1990',
+      legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_1,
+      sourceFile: 'begrippen/dagtekening-in-vaststellingsjaar.md'
+    });
+
+    if (dagtekeningYear < assessmentYear) {
+      throw new Error(
+        `Artikel 9 lid 7 IW 1990 is van toepassing (dagtekening ${dagtekeningYear} ligt vóór het belastingjaar ${assessmentYear}). ` +
+        'Dit hulpmiddel ondersteunt dit geval niet.'
+      );
+    }
+
+    // Dagtekening ná belastingjaar: lid 1 direct, niet via terugvalregel.
+    return applyLid1(date, amount, trace);
+  }
+
+  // Dagtekening-in-vaststellingsjaar is vervuld; gebruik het belastingjaar voor de termijnenberekening.
+  const year = assessmentYear;
   const month = date.getMonth() + 1; // 1-12
   const numTerms = 12 - month;
 
   trace.push({
     step: 'Berekenen aantal termijnen',
-    result: `${numTerms} termijnen mogelijk (12 - maand ${month})`,
+    result: `${numTerms} ${numTerms === 1 ? 'termijn' : 'termijnen'} mogelijk (12 − maand ${month})`,
     legalBasis: 'Artikel 9, vijfde lid, eerste volzin, IW 1990',
     legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_1,
     sourceFile: 'begrippen/termijnenberekening-resterende-maanden.md'
   });
 
+  // Terugvalregel (derde volzin): als de berekening niet leidt tot meer dan één termijn,
+  // herneemt lid 1. Dit geldt voor dagtekening in november (1 termijn) of december (0 termijnen).
   if (numTerms <= 1) {
     trace.push({
-      step: 'Controle aantal termijnen',
-      result: 'Slechts 1 termijn berekend -> Terugval naar hoofdregel',
+      step: 'Controle terugvalregel',
+      result: numTerms === 0
+        ? 'Na de maand van dagtekening resteren 0 maanden in het jaar → terugval naar hoofdregel'
+        : 'Na de maand van dagtekening resteert slechts 1 maand in het jaar → terugval naar hoofdregel',
       legalBasis: 'Artikel 9, vijfde lid, derde volzin, IW 1990',
       legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_3,
       sourceFile: 'begrippen/terugvalregel-lid-1.md'

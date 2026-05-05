@@ -7,7 +7,8 @@ describe('taxEngine', () => {
       type: 'NORMAL',
       date: new Date(2026, 4, 15), // 15 mei 2026
       amount: 1000,
-      isCustomBookYear: false
+      isCustomBookYear: false,
+      assessmentYear: 2026,
     });
 
     expect(result.terms).toHaveLength(1);
@@ -25,7 +26,8 @@ describe('taxEngine', () => {
       type: 'PROVISIONAL',
       date: new Date(2026, 0, 10), // 10 jan 2026
       amount: 1100,
-      isCustomBookYear: false
+      isCustomBookYear: false,
+      assessmentYear: 2026,
     });
 
     // 12 - 1 = 11 termijnen
@@ -43,7 +45,8 @@ describe('taxEngine', () => {
       type: 'PROVISIONAL',
       date: new Date(2026, 10, 15), // 15 nov 2026
       amount: 1000,
-      isCustomBookYear: false
+      isCustomBookYear: false,
+      assessmentYear: 2026,
     });
 
     // 12 - 11 = 1 termijn -> terugval naar lid 1
@@ -56,7 +59,8 @@ describe('taxEngine', () => {
       type: 'PROVISIONAL',
       date: new Date(2026, 9, 10), // 10 okt 2026
       amount: 1000,
-      isCustomBookYear: false
+      isCustomBookYear: false,
+      assessmentYear: 2026,
     });
 
     // 12 - 10 = 2 termijnen
@@ -74,7 +78,8 @@ describe('taxEngine', () => {
       type: 'PROVISIONAL',
       date: new Date(2026, 0, 10), // 10 jan 2026
       amount: 1100,
-      isCustomBookYear: true
+      isCustomBookYear: true,
+      assessmentYear: 2026,
     });
 
     // 11 termijnen
@@ -90,7 +95,8 @@ describe('taxEngine', () => {
       type: 'PROVISIONAL',
       date: new Date(2026, 0, 31), // 31 jan 2026
       amount: 1100,
-      isCustomBookYear: false
+      isCustomBookYear: false,
+      assessmentYear: 2026,
     });
 
     // Termijn 1: 31 jan + 1 mnd -> 28 feb (geen overflow naar 3 mrt)
@@ -103,14 +109,16 @@ describe('taxEngine', () => {
       type: 'NORMAL',
       date: new Date(2026, 4, 15),
       amount: 0,
-      isCustomBookYear: false
+      isCustomBookYear: false,
+      assessmentYear: 2026,
     })).toThrow('Bedrag moet groter zijn dan nul.');
 
     expect(() => calculatePaymentTerms({
       type: 'NORMAL',
       date: new Date(2026, 4, 15),
       amount: -100,
-      isCustomBookYear: false
+      isCustomBookYear: false,
+      assessmentYear: 2026,
     })).toThrow('Bedrag moet groter zijn dan nul.');
   });
 
@@ -119,7 +127,8 @@ describe('taxEngine', () => {
       type: 'NORMAL',
       date: new Date(NaN),
       amount: 1000,
-      isCustomBookYear: false
+      isCustomBookYear: false,
+      assessmentYear: 2026,
     })).toThrow('Ongeldige datum opgegeven.');
   });
 
@@ -128,7 +137,8 @@ describe('taxEngine', () => {
       type: 'PROVISIONAL',
       date: new Date(2026, 11, 15), // 15 dec 2026
       amount: 1000,
-      isCustomBookYear: false
+      isCustomBookYear: false,
+      assessmentYear: 2026,
     });
 
     // 12 - 12 = 0 termijnen -> terugval naar lid 1
@@ -147,13 +157,15 @@ describe('taxEngine', () => {
       type: 'NORMAL',
       date: new Date(2026, 4, 15),
       amount: 1000,
-      isCustomBookYear: true
+      isCustomBookYear: true,
+      assessmentYear: 2026,
     });
     const withoutFlag = calculatePaymentTerms({
       type: 'NORMAL',
       date: new Date(2026, 4, 15),
       amount: 1000,
-      isCustomBookYear: false
+      isCustomBookYear: false,
+      assessmentYear: 2026,
     });
 
     expect(withFlag.terms[0].date.getTime()).toBe(withoutFlag.terms[0].date.getTime());
@@ -166,7 +178,8 @@ describe('taxEngine', () => {
       type: 'PROVISIONAL',
       date: new Date(2026, 0, 10), // 10 jan 2026 → 11 termijnen
       amount: 1003,
-      isCustomBookYear: false
+      isCustomBookYear: false,
+      assessmentYear: 2026,
     });
 
     expect(result.terms).toHaveLength(11);
@@ -185,7 +198,8 @@ describe('taxEngine', () => {
       type: 'PROVISIONAL',
       date: new Date(2026, 0, 10),
       amount: 1100,
-      isCustomBookYear: false
+      isCustomBookYear: false,
+      assessmentYear: 2026,
     });
 
     expect(result.terms.every(t => t.amount === 100)).toBe(true);
@@ -198,7 +212,8 @@ describe('taxEngine', () => {
       type: 'PROVISIONAL',
       date: new Date(2026, 9, 1), // 1 okt → 2 termijnen
       amount: 101,
-      isCustomBookYear: false
+      isCustomBookYear: false,
+      assessmentYear: 2026,
     });
 
     expect(result.terms).toHaveLength(2);
@@ -206,5 +221,38 @@ describe('taxEngine', () => {
     expect(result.terms[1].amount).toBe(50);
     expect(result.terms[0].amount - result.terms[1].amount).toBe(1);
     expect(result.terms.reduce((s, t) => s + t.amount, 0)).toBe(101);
+  });
+
+  // Dagtekening-in-vaststellingsjaar: cross-year scenario's
+  it('should apply lid 1 directly when dagtekening is after belastingjaar', () => {
+    // Aanslag over 2025, maar dagtekening is in 2026 (bijv. navorderingsaanslag)
+    const result = calculatePaymentTerms({
+      type: 'PROVISIONAL',
+      date: new Date(2026, 2, 15), // 15 mrt 2026
+      amount: 500,
+      isCustomBookYear: false,
+      assessmentYear: 2025,
+    });
+
+    // Dagtekening ná belastingjaar → lid 1 direct, niet via terugvalregel
+    expect(result.terms).toHaveLength(1);
+    expect(result.legalBasis).toContain('eerste lid');
+
+    // 15 mrt + 42 dagen = 26 apr
+    const dueDate = result.terms[0].date;
+    expect(dueDate.getFullYear()).toBe(2026);
+    expect(dueDate.getMonth()).toBe(3); // apr = 3
+    expect(dueDate.getDate()).toBe(26);
+  });
+
+  it('should throw when dagtekening is before belastingjaar (lid 7 case)', () => {
+    // Aanslag over 2027, maar dagtekening is in 2026 (niet ondersteund)
+    expect(() => calculatePaymentTerms({
+      type: 'PROVISIONAL',
+      date: new Date(2026, 5, 1), // 1 jun 2026
+      amount: 1000,
+      isCustomBookYear: false,
+      assessmentYear: 2027,
+    })).toThrow('Artikel 9 lid 7');
   });
 });

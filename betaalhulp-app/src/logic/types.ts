@@ -5,6 +5,8 @@ export interface AssessmentRequest {
   date: Date;
   amount: number;
   isCustomBookYear: boolean;
+  /** Alleen relevant voor voorlopige aanslagen: het jaar waarover de aanslag is vastgesteld. */
+  assessmentYear: number;
 }
 
 export interface PaymentTerm {

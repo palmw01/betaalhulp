@@ -21,7 +21,8 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
     ? ''
     : data.date.toLocaleDateString('sv-SE'); // geeft YYYY-MM-DD in lokale tijd
 
-  const isValid = data.amount > 0 && !isNaN(data.date.getTime());
+  const isValid = data.amount > 0 && !isNaN(data.date.getTime()) &&
+    (data.type !== 'PROVISIONAL' || (data.assessmentYear >= 1990 && data.assessmentYear <= 2099));
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); if (isValid) onNext(); }}>
@@ -52,10 +53,32 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
           min="1990-06-01"
           max="2099-12-31"
           value={dateValue}
-          onChange={(e) => onChange({ ...data, date: parseDateLocal(e.target.value) })}
+          onChange={(e) => {
+            const newDate = parseDateLocal(e.target.value);
+            const yearFromDate = isNaN(newDate.getTime()) ? data.assessmentYear : newDate.getFullYear();
+            onChange({ ...data, date: newDate, assessmentYear: yearFromDate });
+          }}
         />
         <span className="hint">De datum waarop de Belastingdienst de aanslag heeft vastgesteld.</span>
       </div>
+
+      {data.type === 'PROVISIONAL' && (
+        <div className="form-group">
+          <label htmlFor="assessmentYear">Belastingjaar van de aanslag</label>
+          <input
+            id="assessmentYear"
+            type="number"
+            min="1990"
+            max="2099"
+            step="1"
+            value={data.assessmentYear}
+            onChange={(e) => onChange({ ...data, assessmentYear: parseInt(e.target.value, 10) || data.assessmentYear })}
+          />
+          <span className="hint">
+            Het jaar waarover de voorlopige aanslag is opgelegd (staat op uw aanslagbiljet). Meestal gelijk aan het jaar van de dagtekening.
+          </span>
+        </div>
+      )}
 
       <div className="form-group">
         <label htmlFor="assessmentAmount">Totaalbedrag (€)</label>

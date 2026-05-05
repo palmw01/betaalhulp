@@ -13,7 +13,7 @@ bronnen:
   - "Art. 9 lid 5 IW 1990"
 peildatum: 2026-01-01
 interpretatiemethode: systematisch
-toelichting-klasse: "Beslissingsregel (terugvalregel) die de toepassingsgrens van de lid-5-termijnenregeling bepaalt. Als het berekende termijnenaantal ≤ 1 is, herneemt art. 9 lid 1 toepassing. Dit doet zich voor bij een dagtekening in december (0 resterende maanden na december)."
+toelichting-klasse: "Beslissingsregel (terugvalregel) die de toepassingsgrens van de lid-5-termijnenregeling bepaalt. Als het berekende termijnenaantal ≤ 1 is, herneemt art. 9 lid 1 toepassing. Dit doet zich voor bij een dagtekening in november (1 resterende maand) of december (0 resterende maanden na december)."
 definitie: "De beslissingsregel die bepaalt dat art. 9 lid 1 IW 1990 herneemt als de termijnenberekening van art. 9 lid 5 eerste volzin niet leidt tot meer dan één termijn, zodat de zes-wekentermijn van lid 1 in de plaats treedt van de gelijke-termijnenregeling"
 soort: "waar-niet-waar"
 herkomst: "afgeleid"
