@@ -14,7 +14,15 @@ export interface PaymentTerm {
   rationale: string;
 }
 
+export interface CalculationStep {
+  step: string;
+  result: string;
+  legalBasis: string;
+  sourceFile?: string;
+}
+
 export interface AssessmentResult {
   terms: PaymentTerm[];
   legalBasis: string;
+  trace: CalculationStep[];
 }

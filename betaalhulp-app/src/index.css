@@ -1,9 +1,11 @@
 :root {
-  --primary-color: #003082; /* Belastingdienst blue */
+  --primary-color: #01689b; /* Official Rijksoverheid Blue */
   --secondary-color: #ffffff;
+  --accent-color: #d52b1e; /* Red for deadlines/warnings */
   --text-color: #333;
-  --bg-color: #f4f4f4;
-  --border-radius: 4px;
+  --bg-color: #f3f3f3;
+  --border-radius: 0px; /* Belastingdienst style is quite sharp/flat */
+  --shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 body {
@@ -14,35 +16,69 @@ body {
   padding: 0;
 }
 
-.container {
-  max-width: 800px;
-  margin: 40px auto;
-  background: white;
-  padding: 40px;
-  border-radius: var(--border-radius);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+/* The Ribbon */
+.ribbon {
+  height: 8px;
+  background-color: #01689b;
+  width: 100%;
 }
 
-h1, h2 {
+.header-container {
+  background-color: white;
+  padding: 20px 0;
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 30px;
+}
+
+.content-width {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.main-container {
+  background-color: white;
+  padding: 40px;
+  box-shadow: var(--shadow);
+  margin-bottom: 50px;
+}
+
+h1 {
   color: var(--primary-color);
+  font-size: 2.4em;
+  margin: 0 0 10px 0;
+  font-weight: normal;
+}
+
+h2 {
+  color: var(--primary-color);
+  border-bottom: 2px solid #e6f0fa;
+  padding-bottom: 10px;
+  margin-top: 0;
+  font-weight: normal;
 }
 
 .btn {
   background-color: var(--primary-color);
   color: white;
   border: none;
-  padding: 10px 20px;
-  border-radius: var(--border-radius);
+  padding: 12px 24px;
   cursor: pointer;
   font-size: 16px;
+  font-weight: bold;
+}
+
+.btn:hover {
+  background-color: #004b71;
 }
 
 .btn:disabled {
   background-color: #ccc;
+  cursor: not-allowed;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 25px;
 }
 
 .form-group label {
@@ -53,36 +89,66 @@ h1, h2 {
 
 .form-group input, .form-group select {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: var(--border-radius);
+  padding: 12px;
+  border: 1px solid #707070;
   box-sizing: border-box;
+  font-size: 16px;
+}
+
+.hint {
+  font-size: 0.9em;
+  color: #666;
+  margin-top: 5px;
+  display: block;
 }
 
 .card {
   border: 1px solid #ddd;
-  padding: 15px;
-  margin-bottom: 10px;
-  border-radius: var(--border-radius);
+  background: #fff;
+  padding: 20px;
+  margin-bottom: 15px;
 }
 
-.term-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 15px;
-  margin-top: 20px;
+.term-item {
+  border-left: 4px solid var(--primary-color);
+  padding-left: 20px;
+  margin-bottom: 30px;
 }
 
-.rationale {
-  font-size: 0.9em;
-  color: #666;
-  font-style: italic;
-  margin-top: 10px;
-}
-
-.legal-basis {
-  margin-top: 30px;
-  padding-top: 15px;
-  border-top: 1px solid #eee;
+.deadline {
+  color: var(--accent-color);
   font-weight: bold;
+  font-size: 1.1em;
+}
+
+.trace-container {
+  background-color: #e6f0fa;
+  padding: 20px;
+  margin-top: 40px;
+}
+
+.trace-step {
+  display: flex;
+  margin-bottom: 10px;
+  font-size: 0.9em;
+}
+
+.trace-label {
+  width: 200px;
+  font-weight: bold;
+}
+
+.legal-basis-tag {
+  background: #fff;
+  padding: 2px 8px;
+  font-size: 0.8em;
+  border: 1px solid #ccc;
+  margin-left: 10px;
+}
+
+footer {
+  text-align: center;
+  padding: 40px 0;
+  color: #666;
+  font-size: 0.8em;
 }

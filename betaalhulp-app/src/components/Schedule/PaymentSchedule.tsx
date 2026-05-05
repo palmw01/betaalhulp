@@ -25,40 +25,54 @@ const PaymentSchedule: React.FC<Props> = ({ result, onBack }) => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Uw Persoonlijke Betaalschema</h2>
-        <div style={{ background: '#e6f0fa', padding: '10px 15px', borderRadius: '4px', fontWeight: 'bold' }}>
-          Totaal: {result.terms.length} {result.terms.length === 1 ? 'termijn' : 'termijnen'}
+        <h2>Uw betaalschema</h2>
+        <div style={{ background: '#e6f0fa', padding: '10px 15px', fontWeight: 'bold', color: '#01689b' }}>
+          {result.terms.length} {result.terms.length === 1 ? 'termijn' : 'termijnen'}
         </div>
       </div>
       
-      <p style={{ marginBottom: '30px', fontSize: '1.1em' }}>
-        Op basis van uw {result.terms.length > 1 ? 'voorlopige' : 'normale'} aanslag zijn de volgende betaalmomenten vastgesteld:
+      <p style={{ marginBottom: '30px' }}>
+        U moet het totaalbedrag betalen in de volgende termijn(en):
       </p>
       
-      <div className="term-grid">
+      <div className="terms-list">
         {result.terms.map((term, index) => (
-          <div key={index} className="card">
-            <div style={{ fontWeight: 'bold', fontSize: '1.2em', color: '#003082' }}>
-              {term.label}
+          <div key={index} className="term-item">
+            <div style={{ fontWeight: 'bold', fontSize: '1.2em' }}>
+              {term.label}: {formatCurrency(term.amount)}
             </div>
-            <div style={{ margin: '8px 0', fontSize: '1.1em' }}>
-              {formatCurrency(term.amount)}
+            <div className="deadline">
+              Uiterste betaaldatum: {formatDate(term.date)}
             </div>
-            <div style={{ color: '#d52b1e', fontWeight: 'bold' }}>
-              Viterlijk betalen op: {formatDate(term.date)}
+            <div className="rationale" style={{ marginTop: '10px', fontSize: '0.9em' }}>
+              {term.rationale}
             </div>
-            <div className="rationale">{term.rationale}</div>
           </div>
         ))}
       </div>
 
-      <div className="legal-basis">
-        Wettelijke basis: {result.legalBasis}
+      <div className="trace-container">
+        <h3 style={{ marginTop: 0, color: '#01689b', fontSize: '1.1em' }}>Hoe is deze berekening tot stand gekomen?</h3>
+        <p style={{ fontSize: '0.9em' }}>
+          De Belastingdienst berekent uw betaaltermijnen op basis van wettelijke regels. 
+          Hieronder ziet u de stappen die zijn gevolgd voor uw specifieke situatie:
+        </p>
+        <div style={{ marginTop: '15px' }}>
+          {result.trace.map((step, index) => (
+            <div key={index} className="trace-step">
+              <div className="trace-label">{step.step}</div>
+              <div style={{ flex: 1 }}>
+                {step.result}
+                <span className="legal-basis-tag">{step.legalBasis}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div style={{ marginTop: '30px' }}>
+      <div style={{ marginTop: '40px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
         <button className="btn" onClick={onBack}>
-          Terug naar invoer
+          Nieuwe berekening
         </button>
       </div>
     </div>
