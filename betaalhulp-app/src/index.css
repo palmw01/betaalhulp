@@ -109,6 +109,10 @@ h2 {
   font-size: 1em;
 }
 
+.form-group label.checkbox-label {
+  display: flex;
+}
+
 .form-group input,
 .form-group select {
   width: 100%;
