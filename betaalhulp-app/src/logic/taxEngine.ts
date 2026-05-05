@@ -37,8 +37,46 @@ function applyLid1(date: Date, amount: number, trace: CalculationStep[]): Assess
   };
 }
 
+function applyLI91(result: AssessmentResult, request: AssessmentRequest): AssessmentResult {
+  const { isCustomBookYear, assessmentYear, date } = request;
+  const lastTermIndex = result.terms.length - 1;
+  if (lastTermIndex < 0) return result;
+
+  const lastTerm = result.terms[lastTermIndex];
+
+  if (isCustomBookYear) {
+    const lastDayOfMonth = new Date(lastTerm.date.getFullYear(), lastTerm.date.getMonth() + 1, 0);
+    if (lastTerm.date.getDate() !== lastDayOfMonth.getDate()) {
+      lastTerm.date = lastDayOfMonth;
+      lastTerm.rationale = 'Voor afwijkende boekjaren wordt de laatste vervaldag gesteld op de laatste dag van de maand (§ 9.1 Leidraad Invordering 2008).';
+      result.trace.push({
+        step: 'Verschuiving laatste termijn (Afwijkend boekjaar)',
+        result: `Gesteld op laatste dag van de maand: ${lastTerm.date.toLocaleDateString('nl-NL')}`,
+        legalBasis: '§ 9.1 Leidraad Invordering 2008',
+        legalText: LEGAL_TEXTS.LI_2008_9_1_AFWIJKEND,
+        sourceFile: 'regels/AR-LI-9-1b.md'
+      });
+    }
+  } else if (date.getMonth() <= 10) { // November of eerder
+    const endOfYear = new Date(assessmentYear, 11, 31);
+    if (lastTerm.date < endOfYear) {
+      lastTerm.date = endOfYear;
+      lastTerm.rationale = 'De laatste termijn is verschoven naar 31 december op basis van begunstigend beleid (§ 9.1 Leidraad Invordering 2008).';
+      result.trace.push({
+        step: `Verschuiving laatste termijn (Termijn ${lastTermIndex + 1})`,
+        result: 'Verschoven naar 31 december (begunstigend beleid)',
+        legalBasis: '§ 9.1 Leidraad Invordering 2008',
+        legalText: LEGAL_TEXTS.LI_2008_9_1,
+        sourceFile: 'regels/AR-LI-9-1a.md'
+      });
+    }
+  }
+
+  return result;
+}
+
 function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): AssessmentResult {
-  const { date, amount, isCustomBookYear, assessmentYear } = request;
+  const { date, amount, assessmentYear } = request;
   const dagtekeningYear = date.getFullYear();
 
   // Kwalificatieconditie: dagtekening moet in het belastingjaar vallen (art. 9 lid 5 IW 1990).
@@ -67,7 +105,6 @@ function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): Assess
   }
 
   // Dagtekening-in-vaststellingsjaar is vervuld; gebruik het belastingjaar voor de termijnenberekening.
-  const year = assessmentYear;
   const month = date.getMonth() + 1; // 1-12
   const numTerms = 12 - month;
 
@@ -91,7 +128,7 @@ function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): Assess
       legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_3,
       sourceFile: 'begrippen/terugvalregel-lid-1.md'
     });
-    return applyLid1(date, amount, trace);
+    return applyLI91(applyLid1(date, amount, trace), request);
   }
 
   // Algoritme: elk termijnbedrag wordt naar boven afgerond op hele euro's.
@@ -116,34 +153,10 @@ function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): Assess
   const terms: PaymentTerm[] = [];
 
   for (let i = 1; i <= numTerms; i++) {
-    let termDate = addMonths(date, i);
-    let termRationale = i === 1
+    const termDate = addMonths(date, i);
+    const termRationale = i === 1
       ? 'Eerste termijn vervalt één maand na dagtekening (Art. 9 lid 5 IW 1990).'
       : 'Vervolgtermijn telkens één maand later (Art. 9 lid 5 IW 1990).';
-
-    if (i === numTerms) {
-      if (isCustomBookYear) {
-        termDate = new Date(termDate.getFullYear(), termDate.getMonth() + 1, 0);
-        trace.push({
-          step: 'Verschuiving laatste termijn (Afwijkend boekjaar)',
-          result: `Gesteld op laatste dag van de maand: ${termDate.toLocaleDateString('nl-NL')}`,
-          legalBasis: '§ 9.1 Leidraad Invordering 2008',
-          legalText: LEGAL_TEXTS.LI_2008_9_1_AFWIJKEND,
-          sourceFile: 'regels/AR-LI-9-1b.md'
-        });
-        termRationale = 'Voor afwijkende boekjaren wordt de laatste vervaldag gesteld op de laatste dag van de maand (§ 9.1 Leidraad Invordering 2008).';
-      } else if (termDate <= new Date(year, 11, 31)) {
-        trace.push({
-          step: `Verschuiving laatste termijn (Termijn ${i})`,
-          result: 'Verschoven naar 31 december (begunstigend beleid)',
-          legalBasis: '§ 9.1 Leidraad Invordering 2008',
-          legalText: LEGAL_TEXTS.LI_2008_9_1,
-          sourceFile: 'regels/AR-LI-9-1a.md'
-        });
-        termDate = new Date(year, 11, 31);
-        termRationale = 'De laatste termijn is verschoven naar 31 december op basis van begunstigend beleid (§ 9.1 Leidraad Invordering 2008).';
-      }
-    }
 
     // De eerste numHigher termijnen krijgen het hogere bedrag, de rest €1 minder.
     const termAmount = i <= numHigher ? higherTerm : lowerTerm;
@@ -156,11 +169,11 @@ function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): Assess
     });
   }
 
-  return {
+  return applyLI91({
     terms,
     legalBasis: 'Artikel 9, vijfde lid, Invorderingswet 1990',
     trace
-  };
+  }, request);
 }
 
 export function calculatePaymentTerms(request: AssessmentRequest): AssessmentResult {

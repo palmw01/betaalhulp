@@ -40,7 +40,7 @@ describe('taxEngine', () => {
     expect(result.terms[0].date.getDate()).toBe(10);
   });
 
-  it('should fallback to Lid 1 if numTerms <= 1 (e.g. November)', () => {
+  it('should fallback to Lid 1 if numTerms <= 1 (e.g. November) and apply LI 2008 Eindejaarsregeling', () => {
     const result = calculatePaymentTerms({
       type: 'PROVISIONAL',
       date: new Date(2026, 10, 15), // 15 nov 2026
@@ -52,6 +52,11 @@ describe('taxEngine', () => {
     // 12 - 11 = 1 termijn -> terugval naar lid 1
     expect(result.terms).toHaveLength(1);
     expect(result.legalBasis).toContain('eerste lid');
+
+    // 15 nov + 42 dagen = 27 dec, maar LI 2008 verschuift naar 31 dec
+    expect(result.terms[0].date.getMonth()).toBe(11); // dec
+    expect(result.terms[0].date.getDate()).toBe(31);
+    expect(result.terms[0].rationale).toContain('Leidraad Invordering 2008');
   });
 
   it('should apply LI 2008 Eindejaarsregeling for October provisional assessment', () => {

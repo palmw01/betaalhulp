@@ -45,7 +45,7 @@ De applicatie implementeert de volgende regels uit Artikel 9 IW 1990 en § 9.1 L
 | **AR-LI-9-1a** | Begunstigende regel: laatste termijn verschoven naar 31 december |
 | **AR-LI-9-1b** | Afwijkend boekjaar: laatste termijn op laatste dag van de maand |
 
-**Terugvalregel** (Art. 9 lid 5, derde volzin): als de termijnberekening niet meer dan één termijn oplevert (dagtekening in november of december), wordt de hoofdregel (zes weken) toegepast.
+**Terugvalregel** (Art. 9 lid 5, derde volzin): als de termijnberekening niet meer dan één termijn oplevert (dagtekening in november of december), wordt de hoofdregel (zes weken) toegepast. Ook in dit geval wordt de vervaldag getoetst aan de begunstigende regels uit § 9.1 LI 2008 (verschuiving naar 31 december of laatste dag van de maand).
 
 ---
 

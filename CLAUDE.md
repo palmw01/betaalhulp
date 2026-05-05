@@ -26,7 +26,10 @@ De Vite base is `/betaalhulp/` (zie `vite.config.ts`); alle asset-paden in `inde
 De kern is `taxEngine.ts` die twee paden implementeert:
 
 - **`applyLid1`** — normale aanslag: één termijn, zes weken na dagtekening (42 dagen kalenderstrikt; Algemene termijnenwet is uitgesloten via art. 9 lid 10 IW 1990)
-- **`applyLid5`** — voorlopige aanslag: `numTerms = 12 - maandnummer` gelijke termijnen; valt terug op `applyLid1` als `numTerms <= 1`
+- **`applyLid5`** — voorlopige aanslag: `numTerms = 12 - maandnummer` gelijke termijnen; valt terug op `applyLid1` als `numTerms <= 1`. De laatste termijn van een voorlopige aanslag wordt altijd gecontroleerd via de hulpfunctie **`applyLI91`**.
+
+**Eindejaarsverschuiving (`applyLI91`):**
+Conform § 9.1 Leidraad Invordering 2008 wordt de laatste (of enige) vervaldag van een voorlopige aanslag (gedagtekend in november of eerder) verschoven naar 31 december als de berekende datum anders eerder zou vallen. Bij afwijkende boekjaren wordt de laatste vervaldag steeds op de laatste dag van de maand gesteld. Deze logica is gecentraliseerd in `applyLI91` en wordt toegepast op zowel de meer-termijnregeling als de een-termijnterugvalregel.
 
 Elke berekening produceert een `trace: CalculationStep[]` — een geordende audit trail van stap → juridische grondslag → letterlijke wettekst. Dit is een contractvereiste: de UI toont elke stap inclusief uitklapbare wettekst.
 
