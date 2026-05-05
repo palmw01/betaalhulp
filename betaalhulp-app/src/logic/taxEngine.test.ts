@@ -84,6 +84,7 @@ describe('taxEngine', () => {
       date: new Date(2026, 0, 10), // 10 jan 2026
       amount: 1100,
       isCustomBookYear: true,
+      bookYearEndMonth: 12,
       assessmentYear: 2026,
     });
 
@@ -93,6 +94,61 @@ describe('taxEngine', () => {
     expect(lastTerm.date.getMonth()).toBe(11);
     expect(lastTerm.date.getDate()).toBe(31);
     expect(lastTerm.rationale).toContain('afwijkende boekjaren');
+  });
+
+  it('should apply LI 2008 custom book year rule for March end month', () => {
+    const result = calculatePaymentTerms({
+      type: 'PROVISIONAL',
+      amount: 1100,
+      isCustomBookYear: true,
+      bookYearEndMonth: 3, // Maart
+      assessmentYear: 2026,
+      date: new Date(2026, 0, 10), // 10 jan 2026
+    });
+
+    // 10 jan (maand 1) -> boekjaar eindigt in maart (maand 3)
+    // Resterende maanden: feb, mrt -> 2 termijnen
+    expect(result.terms).toHaveLength(2);
+    
+    const lastTerm = result.terms[1]; // Tweede termijn is in Maart
+    expect(lastTerm.date.getMonth()).toBe(2); // maart (0-indexed)
+    expect(lastTerm.date.getDate()).toBe(31); // laatste dag van de maand
+
+    const traceStep = result.trace.find(s => s.step.includes('Controle laatste termijn (Afwijkend boekjaar eindigend in 3)'));
+    expect(traceStep).toBeDefined();
+    expect(traceStep?.result).toContain('Einde boekjaar');
+  });
+
+  it('should show Einde boekjaar in trace when last term coincides with book year end', () => {
+    // Dagtekening in mei (maand 4) -> 12 - 5 = 7 termijnen
+    // Termijnen: jun, jul, aug, sep, okt, nov, dec
+    // Laatste termijn: dec
+    const result = calculatePaymentTerms({
+      type: 'PROVISIONAL',
+      date: new Date(2026, 4, 10),
+      amount: 700,
+      isCustomBookYear: true,
+      bookYearEndMonth: 12, // Eindigt in december
+      assessmentYear: 2026,
+    });
+
+    const traceStep = result.trace.find(s => s.step.includes('Afwijkend boekjaar'));
+    expect(traceStep?.result).toContain('Einde boekjaar');
+  });
+
+  it('should still add a trace step for custom book year even if date is already last day of month', () => {
+    const result = calculatePaymentTerms({
+      type: 'PROVISIONAL',
+      date: new Date(2026, 0, 31), // 31 jan 2026
+      amount: 1100,
+      isCustomBookYear: true,
+      bookYearEndMonth: 12,
+      assessmentYear: 2026,
+    });
+
+    const customBookYearStep = result.trace.find(s => s.step.includes('Afwijkend boekjaar'));
+    expect(customBookYearStep).toBeDefined();
+    expect(customBookYearStep?.result).toContain('bleef staan op de laatste dag');
   });
 
   it('should handle month overflow correctly (31 Jan + 1 month = last day of Feb)', () => {

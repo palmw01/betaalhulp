@@ -113,7 +113,7 @@ h2 {
   display: flex;
 }
 
-.form-group input,
+.form-group input:not([type="checkbox"]),
 .form-group select {
   width: 100%;
   padding: 12px;

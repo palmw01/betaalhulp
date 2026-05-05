@@ -96,19 +96,45 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
       </div>
 
       {data.type === 'PROVISIONAL' && (
-        <div className="form-group">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={data.isCustomBookYear}
-              onChange={(e) => onChange({ ...data, isCustomBookYear: e.target.checked })}
-            />
-            Afwijkend boekjaar
-          </label>
-          <span className="hint">
-            Selecteer dit alleen als u een ondernemer bent met een boekjaar dat niet op 1 januari begint.
-          </span>
-        </div>
+        <>
+          <div className="form-group">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={data.isCustomBookYear}
+                onChange={(e) => onChange({ ...data, isCustomBookYear: e.target.checked })}
+              />
+              Afwijkend boekjaar
+            </label>
+            <span className="hint">
+              Selecteer dit alleen als u een ondernemer bent met een boekjaar dat niet op 1 januari begint.
+            </span>
+          </div>
+
+          {data.isCustomBookYear && (
+            <div className="form-group" style={{ marginLeft: '30px', borderLeft: '2px solid #eee', paddingLeft: '15px' }}>
+              <label htmlFor="bookYearEndMonth">In welke maand eindigt uw boekjaar?</label>
+              <select
+                id="bookYearEndMonth"
+                value={data.bookYearEndMonth || 12}
+                onChange={(e) => onChange({ ...data, bookYearEndMonth: parseInt(e.target.value, 10) })}
+              >
+                <option value={1}>Januari</option>
+                <option value={2}>Februari</option>
+                <option value={3}>Maart</option>
+                <option value={4}>April</option>
+                <option value={5}>Mei</option>
+                <option value={6}>Juni</option>
+                <option value={7}>Juli</option>
+                <option value={8}>Augustus</option>
+                <option value={9}>September</option>
+                <option value={10}>Oktober</option>
+                <option value={11}>November</option>
+                <option value={12}>December</option>
+              </select>
+            </div>
+          )}
+        </>
       )}
 
       {error && (

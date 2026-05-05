@@ -5,6 +5,8 @@ export interface AssessmentRequest {
   date: Date;
   amount: number;
   isCustomBookYear: boolean;
+  /** Maandnummer (1-12) waarin het afwijkende boekjaar eindigt. */
+  bookYearEndMonth?: number;
   /** Alleen relevant voor voorlopige aanslagen: het jaar waarover de aanslag is vastgesteld. */
   assessmentYear: number;
 }

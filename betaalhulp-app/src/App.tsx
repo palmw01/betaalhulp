@@ -6,7 +6,14 @@ import AssessmentForm from './components/Form/AssessmentForm';
 import PaymentSchedule from './components/Schedule/PaymentSchedule';
 
 function createDefaultRequest(): AssessmentRequest {
-  return { type: 'NORMAL', date: new Date(), amount: 0, isCustomBookYear: false, assessmentYear: new Date().getFullYear() };
+  return {
+    type: 'NORMAL',
+    date: new Date(),
+    amount: 0,
+    isCustomBookYear: false,
+    bookYearEndMonth: 12,
+    assessmentYear: new Date().getFullYear()
+  };
 }
 
 function App() {

@@ -38,7 +38,7 @@ function applyLid1(date: Date, amount: number, trace: CalculationStep[]): Assess
 }
 
 function applyLI91(result: AssessmentResult, request: AssessmentRequest): AssessmentResult {
-  const { isCustomBookYear, assessmentYear, date } = request;
+  const { isCustomBookYear, bookYearEndMonth = 12, assessmentYear, date } = request;
   const lastTermIndex = result.terms.length - 1;
   if (lastTermIndex < 0) return result;
 
@@ -46,17 +46,23 @@ function applyLI91(result: AssessmentResult, request: AssessmentRequest): Assess
 
   if (isCustomBookYear) {
     const lastDayOfMonth = new Date(lastTerm.date.getFullYear(), lastTerm.date.getMonth() + 1, 0);
-    if (lastTerm.date.getDate() !== lastDayOfMonth.getDate()) {
+    const alreadyLastDay = lastTerm.date.getDate() === lastDayOfMonth.getDate();
+    const isEndBookYear = (lastTerm.date.getMonth() + 1) === bookYearEndMonth;
+
+    if (!alreadyLastDay) {
       lastTerm.date = lastDayOfMonth;
       lastTerm.rationale = 'Voor afwijkende boekjaren wordt de laatste vervaldag gesteld op de laatste dag van de maand (§ 9.1 Leidraad Invordering 2008).';
-      result.trace.push({
-        step: 'Verschuiving laatste termijn (Afwijkend boekjaar)',
-        result: `Gesteld op laatste dag van de maand: ${lastTerm.date.toLocaleDateString('nl-NL')}`,
-        legalBasis: '§ 9.1 Leidraad Invordering 2008',
-        legalText: LEGAL_TEXTS.LI_2008_9_1_AFWIJKEND,
-        sourceFile: 'regels/AR-LI-9-1b.md'
-      });
     }
+
+    result.trace.push({
+      step: `Controle laatste termijn (Afwijkend boekjaar eindigend in ${bookYearEndMonth})`,
+      result: alreadyLastDay
+        ? `Vervaldag bleef staan op de laatste dag van de maand: ${lastTerm.date.toLocaleDateString('nl-NL')}`
+        : `Verschoven naar laatste dag van de maand: ${lastTerm.date.toLocaleDateString('nl-NL')}${isEndBookYear ? ' (Einde boekjaar)' : ''}`,
+      legalBasis: '§ 9.1 Leidraad Invordering 2008',
+      legalText: LEGAL_TEXTS.LI_2008_9_1_AFWIJKEND,
+      sourceFile: 'regels/AR-LI-9-1b.md'
+    });
   } else if (date.getMonth() <= 10) { // November of eerder
     const endOfYear = new Date(assessmentYear, 11, 31);
     if (lastTerm.date < endOfYear) {
@@ -106,11 +112,18 @@ function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): Assess
 
   // Dagtekening-in-vaststellingsjaar is vervuld; gebruik het belastingjaar voor de termijnenberekening.
   const month = date.getMonth() + 1; // 1-12
-  const numTerms = 12 - month;
+  const isCustom = request.isCustomBookYear && request.bookYearEndMonth;
+  const endMonth = isCustom ? request.bookYearEndMonth! : 12;
+
+  const numTerms = isCustom 
+    ? (endMonth - month + 12) % 12 
+    : 12 - month;
 
   trace.push({
     step: 'Berekenen aantal termijnen',
-    result: `${numTerms} ${numTerms === 1 ? 'termijn' : 'termijnen'} mogelijk (12 − maand ${month})`,
+    result: isCustom
+      ? `${numTerms} ${numTerms === 1 ? 'termijn' : 'termijnen'} mogelijk (maand ${month} t/m ${endMonth} in afwijkend boekjaar)`
+      : `${numTerms} ${numTerms === 1 ? 'termijn' : 'termijnen'} mogelijk (12 − maand ${month})`,
     legalBasis: 'Artikel 9, vijfde lid, eerste volzin, IW 1990',
     legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_1,
     sourceFile: 'begrippen/termijnenberekening-resterende-maanden.md'
