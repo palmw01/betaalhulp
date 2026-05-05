@@ -63,19 +63,23 @@ const PaymentSchedule: React.FC<Props> = ({ result, onBack }) => {
               <div key={index} className="trace-step">
                 <div className="trace-label">{step.step}</div>
                 <div className="trace-result">{step.result}</div>
-                <div className="trace-meta">
-                  <span className="legal-basis-tag">{step.legalBasis}</span>
-                  {step.legalText && (
-                    <button
-                      className="legal-text-toggle"
-                      onClick={() => toggleStep(index)}
-                      aria-expanded={isExpanded}
-                      aria-controls={`legal-text-${index}`}
-                    >
-                      {isExpanded ? 'Verberg wettekst' : 'Toon wettekst'}
-                    </button>
-                  )}
-                </div>
+
+                {step.legalText ? (
+                  <button
+                    className="legal-ref legal-ref--expandable"
+                    onClick={() => toggleStep(index)}
+                    aria-expanded={isExpanded}
+                    aria-controls={`legal-text-${index}`}
+                  >
+                    {step.legalBasis}
+                    <span className="legal-ref-icon" aria-hidden="true">
+                      {isExpanded ? '▴' : '▾'}
+                    </span>
+                  </button>
+                ) : (
+                  <span className="legal-ref">{step.legalBasis}</span>
+                )}
+
                 {isExpanded && step.legalText && (
                   <div
                     id={`legal-text-${index}`}

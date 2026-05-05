@@ -250,30 +250,33 @@ h2 {
   margin-bottom: 6px;
 }
 
-.trace-meta {
-  display: flex;
-  flex-wrap: wrap;
+.legal-ref {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  margin-top: 4px;
-}
-
-.legal-basis-tag {
+  margin-top: 6px;
+  padding: 4px 10px;
   background: #fff;
-  padding: 3px 8px;
-  font-size: 0.8em;
   border: 1px solid #ccc;
+  font-size: 0.8em;
+  color: #555;
+  line-height: 1.4;
 }
 
-.legal-text-toggle {
-  background: none;
-  border: none;
-  color: var(--primary-color);
-  text-decoration: underline;
-  font-size: 0.85em;
+.legal-ref--expandable {
   cursor: pointer;
-  padding: 0;
+  color: var(--primary-color);
+  border-color: var(--primary-color);
   font-family: inherit;
+}
+
+.legal-ref--expandable:hover {
+  background-color: #e6f0fa;
+}
+
+.legal-ref-icon {
+  font-size: 0.8em;
+  flex-shrink: 0;
 }
 
 .legal-text {
