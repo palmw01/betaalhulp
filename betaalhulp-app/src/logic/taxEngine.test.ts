@@ -110,11 +110,11 @@ describe('taxEngine', () => {
     // Resterende maanden: feb, mrt -> 2 termijnen
     expect(result.terms).toHaveLength(2);
     
-    const lastTerm = result.terms[1]; // Tweede termijn is in Maart
-    expect(lastTerm.date.getMonth()).toBe(2); // maart (0-indexed)
-    expect(lastTerm.date.getDate()).toBe(31); // laatste dag van de maand
-
-    const traceStep = result.trace.find(s => s.step.includes('Controle laatste termijn (Afwijkend boekjaar eindigend in 3)'));
+    const lastTerm = result.terms[1]; // Maart
+    expect(lastTerm.date.getMonth()).toBe(2); // maart
+    expect(lastTerm.date.getDate()).toBe(31);
+    
+    const traceStep = result.trace.find(s => s.step.includes('Controle laatste termijn (Afwijkend boekjaar eindigend in maart)'));
     expect(traceStep).toBeDefined();
     expect(traceStep?.result).toContain('Einde boekjaar');
   });

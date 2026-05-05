@@ -3,6 +3,16 @@ import { LEGAL_TEXTS } from './legalTexts';
 
 const SIX_WEEKS_IN_DAYS = 42;
 
+const MONTH_NAMES = [
+  'januari', 'februari', 'maart', 'april',
+  'mei', 'juni', 'juli', 'augustus',
+  'september', 'oktober', 'november', 'december'
+];
+
+function getMonthName(month: number): string {
+  return MONTH_NAMES[month - 1] || month.toString();
+}
+
 // Voegt maanden toe aan een datum. Bij overflow (bijv. 31 jan + 1 mnd) wordt
 // de laatste dag van de doelmaand gebruikt in plaats van doorlopen naar de volgende maand.
 function addMonths(base: Date, months: number): Date {
@@ -55,7 +65,7 @@ function applyLI91(result: AssessmentResult, request: AssessmentRequest): Assess
     }
 
     result.trace.push({
-      step: `Controle laatste termijn (Afwijkend boekjaar eindigend in ${bookYearEndMonth})`,
+      step: `Controle laatste termijn (Afwijkend boekjaar eindigend in ${getMonthName(bookYearEndMonth)})`,
       result: alreadyLastDay
         ? `Vervaldag bleef staan op de laatste dag van de maand: ${lastTerm.date.toLocaleDateString('nl-NL')}`
         : `Verschoven naar laatste dag van de maand: ${lastTerm.date.toLocaleDateString('nl-NL')}${isEndBookYear ? ' (Einde boekjaar)' : ''}`,
@@ -122,7 +132,7 @@ function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): Assess
   trace.push({
     step: 'Berekenen aantal termijnen',
     result: isCustom
-      ? `${numTerms} ${numTerms === 1 ? 'termijn' : 'termijnen'} mogelijk (maand ${month} t/m ${endMonth} in afwijkend boekjaar)`
+      ? `${numTerms} ${numTerms === 1 ? 'termijn' : 'termijnen'} mogelijk (${getMonthName(month)} t/m ${getMonthName(endMonth)} in afwijkend boekjaar)`
       : `${numTerms} ${numTerms === 1 ? 'termijn' : 'termijnen'} mogelijk (12 − maand ${month})`,
     legalBasis: 'Artikel 9, vijfde lid, eerste volzin, IW 1990',
     legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_1,
