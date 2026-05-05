@@ -1,110 +1,21 @@
 import type { AssessmentRequest, AssessmentResult, PaymentTerm, CalculationStep } from './types';
 import { LEGAL_TEXTS } from './legalTexts';
 
-export function calculatePaymentTerms(request: AssessmentRequest): AssessmentResult {
-  const { type, date, amount, isCustomBookYear } = request;
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1; // 1-12
-  const trace: CalculationStep[] = [];
+const SIX_WEEKS_IN_DAYS = 42;
 
-  trace.push({
-    step: 'Vaststellen aanslagtype',
-    result: type === 'PROVISIONAL' ? 'Voorlopige aanslag' : 'Normale aanslag',
-    legalBasis: 'Artikel 9, eerste en vijfde lid, IW 1990',
-    legalText: type === 'PROVISIONAL' ? LEGAL_TEXTS.ART_9_LID_5_VOLZIN_1 : LEGAL_TEXTS.ART_9_LID_1
-  });
-
-  // LID 5: Voorlopige aanslag in het belastingjaar
-  if (type === 'PROVISIONAL') {
-    const numTerms = 12 - month;
-    
-    trace.push({
-      step: 'Berekenen aantal termijnen',
-      result: `${numTerms} termijnen mogelijk (12 - maand ${month})`,
-      legalBasis: 'Artikel 9, vijfde lid, eerste volzin, IW 1990',
-      legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_1,
-      sourceFile: 'begrippen/termijnenberekening-resterende-maanden.md'
-    });
-
-    if (numTerms > 1) {
-      const terms: PaymentTerm[] = [];
-      const termAmount = Math.floor((amount / numTerms) * 100) / 100;
-      let remaining = amount;
-
-      trace.push({
-        step: 'Toepassen termijnregeling',
-        result: `Bedrag wordt verdeeld over ${numTerms} gelijke termijnen`,
-        legalBasis: 'Artikel 9, vijfde lid, tweede volzin, IW 1990',
-        legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_2,
-        sourceFile: 'regels/AR-9-5a.md'
-      });
-
-      for (let i = 1; i <= numTerms; i++) {
-        let termDate = new Date(date);
-        termDate.setMonth(termDate.getMonth() + i);
-        let termRationale = i === 1 
-          ? 'Eerste termijn vervalt één maand na dagtekening (Art. 9 lid 5 IW 1990).' 
-          : 'Vervolgtermijn telkens één maand later (Art. 9 lid 5 IW 1990).';
-
-        // LI 2008: Eindejaarsregeling
-        if (i === numTerms && month <= 11 && !isCustomBookYear) {
-          const dec31 = new Date(year, 11, 31);
-          if (termDate < dec31) {
-            trace.push({
-              step: `Verschuiving laatste termijn (Termijn ${i})`,
-              result: 'Verschoven naar 31 december (begunstigend beleid)',
-              legalBasis: '§ 9.1 Leidraad Invordering 2008',
-              legalText: LEGAL_TEXTS.LI_2008_9_1,
-              sourceFile: 'regels/AR-LI-9-1a.md'
-            });
-            termDate = dec31;
-            termRationale = 'De laatste termijn is verschoven naar 31 december op basis van begunstigend beleid (§ 9.1 Leidraad Invordering 2008).';
-          }
-        }
-
-        // LI 2008: Afwijkend boekjaar
-        if (i === numTerms && isCustomBookYear) {
-          termDate = new Date(termDate.getFullYear(), termDate.getMonth() + 1, 0);
-          trace.push({
-            step: `Verschuiving laatste termijn (Afwijkend boekjaar)`,
-            result: `Gesteld op laatste dag van de maand: ${termDate.toLocaleDateString()}`,
-            legalBasis: '§ 9.1 Leidraad Invordering 2008',
-            legalText: LEGAL_TEXTS.LI_2008_9_1_AFWIJKEND,
-            sourceFile: 'regels/AR-LI-9-1b.md'
-          });
-          termRationale = 'Voor afwijkende boekjaren wordt de laatste vervaldag gesteld op de laatste dag van de maand (§ 9.1 Leidraad Invordering 2008).';
-        }
-
-        const currentAmount = i === numTerms ? Math.round(remaining * 100) / 100 : termAmount;
-        remaining -= currentAmount;
-
-        terms.push({
-          date: termDate,
-          amount: currentAmount,
-          label: `Termijn ${i}`,
-          rationale: termRationale
-        });
-      }
-
-      return {
-        terms,
-        legalBasis: 'Artikel 9, vijfde lid, Invorderingswet 1990',
-        trace
-      };
-    } else {
-      trace.push({
-        step: 'Controle aantal termijnen',
-        result: 'Slechts 1 termijn berekend -> Terugval naar hoofdregel',
-        legalBasis: 'Artikel 9, vijfde lid, derde volzin, IW 1990',
-        legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_3,
-        sourceFile: 'begrippen/terugvalregel-lid-1.md'
-      });
-    }
+// Voegt maanden toe aan een datum. Bij overflow (bijv. 31 jan + 1 mnd) wordt
+// de laatste dag van de doelmaand gebruikt in plaats van doorlopen naar de volgende maand.
+function addMonths(base: Date, months: number): Date {
+  const d = new Date(base.getFullYear(), base.getMonth() + months, base.getDate());
+  if (d.getDate() !== base.getDate()) {
+    d.setDate(0);
   }
+  return d;
+}
 
-  // LID 1: Standaardregeling (6 weken)
+function applyLid1(date: Date, amount: number, trace: CalculationStep[]): AssessmentResult {
   const dueDate = new Date(date);
-  dueDate.setDate(dueDate.getDate() + 42); // 6 weeks
+  dueDate.setDate(dueDate.getDate() + SIX_WEEKS_IN_DAYS);
 
   trace.push({
     step: 'Toepassen hoofdregel',
@@ -117,11 +28,118 @@ export function calculatePaymentTerms(request: AssessmentRequest): AssessmentRes
   return {
     terms: [{
       date: dueDate,
-      amount: amount,
+      amount,
       label: 'Volledig bedrag',
       rationale: 'Invorderbaarheid treedt in zodra de termijn van zes weken na de dagtekening is verstreken (Art. 9 lid 1 IW 1990).'
     }],
     legalBasis: 'Artikel 9, eerste lid, Invorderingswet 1990',
     trace
   };
+}
+
+function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): AssessmentResult {
+  const { date, amount, isCustomBookYear } = request;
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1; // 1-12
+  const numTerms = 12 - month;
+
+  trace.push({
+    step: 'Berekenen aantal termijnen',
+    result: `${numTerms} termijnen mogelijk (12 - maand ${month})`,
+    legalBasis: 'Artikel 9, vijfde lid, eerste volzin, IW 1990',
+    legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_1,
+    sourceFile: 'begrippen/termijnenberekening-resterende-maanden.md'
+  });
+
+  if (numTerms <= 1) {
+    trace.push({
+      step: 'Controle aantal termijnen',
+      result: 'Slechts 1 termijn berekend -> Terugval naar hoofdregel',
+      legalBasis: 'Artikel 9, vijfde lid, derde volzin, IW 1990',
+      legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_3,
+      sourceFile: 'begrippen/terugvalregel-lid-1.md'
+    });
+    return applyLid1(date, amount, trace);
+  }
+
+  trace.push({
+    step: 'Toepassen termijnregeling',
+    result: `Bedrag wordt verdeeld over ${numTerms} gelijke termijnen`,
+    legalBasis: 'Artikel 9, vijfde lid, tweede volzin, IW 1990',
+    legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_2,
+    sourceFile: 'regels/AR-9-5a.md'
+  });
+
+  // Werk in integer-centen om drijvende-komma-accumulatie te vermijden.
+  const totalCents = Math.round(amount * 100);
+  const termCents = Math.floor(totalCents / numTerms);
+  let remainingCents = totalCents;
+  const terms: PaymentTerm[] = [];
+
+  for (let i = 1; i <= numTerms; i++) {
+    let termDate = addMonths(date, i);
+    let termRationale = i === 1
+      ? 'Eerste termijn vervalt één maand na dagtekening (Art. 9 lid 5 IW 1990).'
+      : 'Vervolgtermijn telkens één maand later (Art. 9 lid 5 IW 1990).';
+
+    if (i === numTerms) {
+      if (isCustomBookYear) {
+        termDate = new Date(termDate.getFullYear(), termDate.getMonth() + 1, 0);
+        trace.push({
+          step: 'Verschuiving laatste termijn (Afwijkend boekjaar)',
+          result: `Gesteld op laatste dag van de maand: ${termDate.toLocaleDateString('nl-NL')}`,
+          legalBasis: '§ 9.1 Leidraad Invordering 2008',
+          legalText: LEGAL_TEXTS.LI_2008_9_1_AFWIJKEND,
+          sourceFile: 'regels/AR-LI-9-1b.md'
+        });
+        termRationale = 'Voor afwijkende boekjaren wordt de laatste vervaldag gesteld op de laatste dag van de maand (§ 9.1 Leidraad Invordering 2008).';
+      } else if (month <= 11 && termDate < new Date(year, 11, 31)) {
+        trace.push({
+          step: `Verschuiving laatste termijn (Termijn ${i})`,
+          result: 'Verschoven naar 31 december (begunstigend beleid)',
+          legalBasis: '§ 9.1 Leidraad Invordering 2008',
+          legalText: LEGAL_TEXTS.LI_2008_9_1,
+          sourceFile: 'regels/AR-LI-9-1a.md'
+        });
+        termDate = new Date(year, 11, 31);
+        termRationale = 'De laatste termijn is verschoven naar 31 december op basis van begunstigend beleid (§ 9.1 Leidraad Invordering 2008).';
+      }
+    }
+
+    const currentCents = i === numTerms ? remainingCents : termCents;
+    remainingCents -= currentCents;
+
+    terms.push({
+      date: termDate,
+      amount: currentCents / 100,
+      label: `Termijn ${i}`,
+      rationale: termRationale
+    });
+  }
+
+  return {
+    terms,
+    legalBasis: 'Artikel 9, vijfde lid, Invorderingswet 1990',
+    trace
+  };
+}
+
+export function calculatePaymentTerms(request: AssessmentRequest): AssessmentResult {
+  if (request.amount <= 0) throw new Error('Bedrag moet groter zijn dan nul.');
+
+  const { type } = request;
+  const trace: CalculationStep[] = [];
+
+  trace.push({
+    step: 'Vaststellen aanslagtype',
+    result: type === 'PROVISIONAL' ? 'Voorlopige aanslag' : 'Normale aanslag',
+    legalBasis: 'Artikel 9, eerste en vijfde lid, IW 1990',
+    legalText: type === 'PROVISIONAL' ? LEGAL_TEXTS.ART_9_LID_5_VOLZIN_1 : LEGAL_TEXTS.ART_9_LID_1
+  });
+
+  if (type === 'PROVISIONAL') {
+    return applyLid5(request, trace);
+  }
+
+  return applyLid1(request.date, request.amount, trace);
 }

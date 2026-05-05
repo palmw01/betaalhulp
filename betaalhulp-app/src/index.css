@@ -146,9 +146,34 @@ h2 {
   margin-left: 10px;
 }
 
+.page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.terms-list {
+  margin-bottom: 20px;
+}
+
+.rationale {
+  color: #555;
+  line-height: 1.5;
+}
+
+.form-error {
+  background-color: #fde8e8;
+  border-left: 4px solid var(--accent-color);
+  color: #8b0000;
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  font-size: 0.95em;
+}
+
 footer {
   text-align: center;
   padding: 40px 0;
   color: #666;
   font-size: 0.8em;
+  margin-top: auto;
 }

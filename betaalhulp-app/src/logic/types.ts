@@ -4,7 +4,7 @@ export interface AssessmentRequest {
   type: AssessmentType;
   date: Date;
   amount: number;
-  isCustomBookYear?: boolean;
+  isCustomBookYear: boolean;
 }
 
 export interface PaymentTerm {

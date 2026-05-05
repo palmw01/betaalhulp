@@ -5,23 +5,30 @@ import { calculatePaymentTerms } from './logic/taxEngine';
 import AssessmentForm from './components/Form/AssessmentForm';
 import PaymentSchedule from './components/Schedule/PaymentSchedule';
 
+function createDefaultRequest(): AssessmentRequest {
+  return { type: 'NORMAL', date: new Date(), amount: 0, isCustomBookYear: false };
+}
+
 function App() {
   const [step, setStep] = useState<'INTRO' | 'FORM' | 'RESULT'>('INTRO');
-  const [request, setRequest] = useState<AssessmentRequest>({
-    type: 'NORMAL',
-    date: new Date(),
-    amount: 0,
-    isCustomBookYear: false
-  });
+  const [request, setRequest] = useState<AssessmentRequest>(createDefaultRequest);
   const [result, setResult] = useState<AssessmentResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleCalculate = () => {
-    const calculationResult = calculatePaymentTerms(request);
-    setResult(calculationResult);
-    setStep('RESULT');
+    try {
+      setResult(calculatePaymentTerms(request));
+      setError(null);
+      setStep('RESULT');
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Er is een onbekende fout opgetreden.');
+    }
   };
 
   const handleBack = () => {
+    setRequest(createDefaultRequest());
+    setResult(null);
+    setError(null);
     setStep('FORM');
   };
 
@@ -45,7 +52,7 @@ function App() {
             <div>
               <h2>Wanneer moet u betalen?</h2>
               <p>
-                Met dit hulpmiddel berekent u eenvoudig de uiterste betaaldatum(s) van uw belastingaanslag. 
+                Met dit hulpmiddel berekent u eenvoudig de uiterste betaaldatum(s) van uw belastingaanslag.
                 De berekening is gebaseerd op Artikel 9 van de Invorderingswet 1990.
               </p>
               <p><strong>Houd uw aanslagbiljet bij de hand. U heeft de volgende gegevens nodig:</strong></p>
@@ -61,10 +68,11 @@ function App() {
           )}
 
           {step === 'FORM' && (
-            <AssessmentForm 
-              data={request} 
-              onChange={setRequest} 
-              onNext={handleCalculate} 
+            <AssessmentForm
+              data={request}
+              onChange={setRequest}
+              onNext={handleCalculate}
+              error={error}
             />
           )}
 
