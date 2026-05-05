@@ -62,18 +62,25 @@ function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): Assess
     return applyLid1(date, amount, trace);
   }
 
+  // Algoritme: elk termijnbedrag wordt naar boven afgerond op hele euro's.
+  // Vervolgens worden een aantal termijnen met precies €1 verlaagd totdat
+  // de som exact gelijk is aan het totaalbedrag (uitvoeringskeuze).
+  // Belastingaanslagen luiden in hele euro's; Math.round absorbeert eventuele centafwijkingen.
+  const totalEuros = Math.round(amount);
+  const higherTerm = Math.ceil(totalEuros / numTerms);
+  const lowerTerm = higherTerm - 1;
+  const numHigher = totalEuros - numTerms * lowerTerm; // 1..numTerms termijnen met higherTerm
+
   trace.push({
     step: 'Toepassen termijnregeling',
-    result: `Bedrag wordt verdeeld over ${numTerms} gelijke termijnen`,
+    result: numHigher === numTerms
+      ? `Bedrag wordt verdeeld in ${numTerms} gelijke termijnen van €${higherTerm}`
+      : `Bedrag wordt verdeeld in ${numHigher} termijnen van €${higherTerm} en ${numTerms - numHigher} termijnen van €${lowerTerm}`,
     legalBasis: 'Artikel 9, vijfde lid, tweede volzin, IW 1990',
     legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_2,
     sourceFile: 'regels/AR-9-5a.md'
   });
 
-  // Werk in integer-centen om drijvende-komma-accumulatie te vermijden.
-  const totalCents = Math.round(amount * 100);
-  const termCents = Math.floor(totalCents / numTerms);
-  let remainingCents = totalCents;
   const terms: PaymentTerm[] = [];
 
   for (let i = 1; i <= numTerms; i++) {
@@ -106,12 +113,12 @@ function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): Assess
       }
     }
 
-    const currentCents = i === numTerms ? remainingCents : termCents;
-    remainingCents -= currentCents;
+    // De eerste numHigher termijnen krijgen het hogere bedrag, de rest €1 minder.
+    const termAmount = i <= numHigher ? higherTerm : lowerTerm;
 
     terms.push({
       date: termDate,
-      amount: currentCents / 100,
+      amount: termAmount,
       label: `Termijn ${i}`,
       rationale: termRationale
     });

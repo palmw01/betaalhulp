@@ -159,17 +159,52 @@ describe('taxEngine', () => {
     expect(withFlag.terms[0].date.getTime()).toBe(withoutFlag.terms[0].date.getTime());
   });
 
-  it('should correctly distribute rounding remainder to last term', () => {
+  it('should round each term up to whole euros and correct with €1 reductions', () => {
+    // 1003 / 11 = 91.18... → higherTerm=92, lowerTerm=91
+    // numHigher = 1003 - 11*91 = 2 → eerste 2 termijnen €92, daarna €91
     const result = calculatePaymentTerms({
       type: 'PROVISIONAL',
-      date: new Date(2026, 9, 1), // 1 okt 2026 -> 2 termijnen
-      amount: 100.01,
+      date: new Date(2026, 0, 10), // 10 jan 2026 → 11 termijnen
+      amount: 1003,
+      isCustomBookYear: false
+    });
+
+    expect(result.terms).toHaveLength(11);
+    expect(result.terms[0].amount).toBe(92);
+    expect(result.terms[1].amount).toBe(92);
+    expect(result.terms[2].amount).toBe(91);
+    expect(result.terms[10].amount).toBe(91);
+
+    const total = result.terms.reduce((sum, t) => sum + t.amount, 0);
+    expect(total).toBe(1003);
+  });
+
+  it('should produce equal terms when total is exactly divisible', () => {
+    // 1100 / 11 = 100 precies → alle termijnen €100
+    const result = calculatePaymentTerms({
+      type: 'PROVISIONAL',
+      date: new Date(2026, 0, 10),
+      amount: 1100,
+      isCustomBookYear: false
+    });
+
+    expect(result.terms.every(t => t.amount === 100)).toBe(true);
+    expect(result.terms.reduce((s, t) => s + t.amount, 0)).toBe(1100);
+  });
+
+  it('should handle two unequal terms (101 over 2 = 51 + 50)', () => {
+    // 101 / 2 = 50.5 → higherTerm=51, lowerTerm=50, numHigher=1
+    const result = calculatePaymentTerms({
+      type: 'PROVISIONAL',
+      date: new Date(2026, 9, 1), // 1 okt → 2 termijnen
+      amount: 101,
       isCustomBookYear: false
     });
 
     expect(result.terms).toHaveLength(2);
-    const total = result.terms.reduce((sum, t) => sum + t.amount, 0);
-    // Totaal moet exact gelijk zijn aan het ingevoerde bedrag
-    expect(Math.round(total * 100)).toBe(Math.round(100.01 * 100));
+    expect(result.terms[0].amount).toBe(51);
+    expect(result.terms[1].amount).toBe(50);
+    expect(result.terms[0].amount - result.terms[1].amount).toBe(1);
+    expect(result.terms.reduce((s, t) => s + t.amount, 0)).toBe(101);
   });
 });
