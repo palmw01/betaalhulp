@@ -32,7 +32,7 @@ const PaymentSchedule: React.FC<Props> = ({ result, onBack }) => {
         </div>
       </div>
 
-      <p>U moet het totaalbedrag betalen in de volgende termijn(en):</p>
+      <p>De aanslag wordt invorderbaar op de volgende datum(s). Betaal uiterlijk op:</p>
 
       <div className="terms-list">
         {result.terms.map((term, index) => (
@@ -41,7 +41,7 @@ const PaymentSchedule: React.FC<Props> = ({ result, onBack }) => {
               {term.label}: {formatCurrency(term.amount)}
             </div>
             <div className="deadline">
-              Uiterste betaaldatum: {formatDate(term.date)}
+              Vervaldag (uiterste betaaldatum): {formatDate(term.date)}
             </div>
             <div className="rationale">
               {term.rationale}
@@ -53,7 +53,7 @@ const PaymentSchedule: React.FC<Props> = ({ result, onBack }) => {
       <div className="trace-container">
         <h3>Hoe is deze berekening tot stand gekomen?</h3>
         <p style={{ fontSize: '0.9em' }}>
-          De Belastingdienst berekent uw betaaltermijnen op basis van wettelijke regels.
+          De betaaltermijnen vloeien voort uit de wet en het begunstigende beleid van de Belastingdienst.
           Hieronder ziet u de stappen die zijn gevolgd voor uw specifieke situatie:
         </p>
         <div>
