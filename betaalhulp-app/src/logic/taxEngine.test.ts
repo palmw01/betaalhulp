@@ -154,14 +154,62 @@ describe('taxEngine', () => {
   it('should handle month overflow correctly (31 Jan + 1 month = last day of Feb)', () => {
     const result = calculatePaymentTerms({
       type: 'PROVISIONAL',
-      date: new Date(2026, 0, 31), // 31 jan 2026
+      date: new Date(2026, 0, 31), // 31 jan 2026 (laatste dag van jan)
       amount: 1100,
       isCustomBookYear: false,
       assessmentYear: 2026,
     });
 
-    // Termijn 1: 31 jan + 1 mnd -> 28 feb (geen overflow naar 3 mrt)
+    // § 9.5 LI 2008: dagtekening is laatste dag van de maand → termijnen ook op laatste dag
+    // 31 jan + 1 mnd → 28 feb (laatste dag feb 2026, niet-schrikkeljaar)
     expect(result.terms[0].date.getMonth()).toBe(1); // feb
+    expect(result.terms[0].date.getDate()).toBe(28);
+    // 31 jan + 2 mnd → 31 mrt (laatste dag mrt)
+    expect(result.terms[1].date.getMonth()).toBe(2); // mrt
+    expect(result.terms[1].date.getDate()).toBe(31);
+    // 31 jan + 3 mnd → 30 apr (laatste dag apr)
+    expect(result.terms[2].date.getMonth()).toBe(3); // apr
+    expect(result.terms[2].date.getDate()).toBe(30);
+  });
+
+  it('§ 9.5 LI 2008: dagtekening 28 feb (niet-schrikkeljaar) → termijnen op laatste dag van de maand', () => {
+    // 2026 is geen schrikkeljaar, dus 28 feb is de laatste dag van feb
+    const result = calculatePaymentTerms({
+      type: 'PROVISIONAL',
+      date: new Date(2026, 1, 28), // 28 feb 2026 (laatste dag van feb)
+      amount: 1000,
+      isCustomBookYear: false,
+      assessmentYear: 2026,
+    });
+
+    // 12 - 2 = 10 termijnen
+    expect(result.terms).toHaveLength(10);
+
+    // Termijn 1: 28 feb + 1 mnd → 31 mrt (laatste dag mrt; niet 28 mrt)
+    expect(result.terms[0].date.getMonth()).toBe(2); // mrt
+    expect(result.terms[0].date.getDate()).toBe(31);
+
+    // Termijn 2: 28 feb + 2 mnd → 30 apr (laatste dag apr)
+    expect(result.terms[1].date.getMonth()).toBe(3); // apr
+    expect(result.terms[1].date.getDate()).toBe(30);
+
+    // Termijn 3: 28 feb + 3 mnd → 31 mei
+    expect(result.terms[2].date.getMonth()).toBe(4); // mei
+    expect(result.terms[2].date.getDate()).toBe(31);
+  });
+
+  it('§ 9.5 LI 2008: dagtekening 28 feb in schrikkeljaar → geen laatste-dag-regel (feb heeft 29 dagen)', () => {
+    // 2028 is een schrikkeljaar; 28 feb is NIET de laatste dag
+    const result = calculatePaymentTerms({
+      type: 'PROVISIONAL',
+      date: new Date(2028, 1, 28), // 28 feb 2028 (schrikkeljaar: feb heeft 29 dagen)
+      amount: 1000,
+      isCustomBookYear: false,
+      assessmentYear: 2028,
+    });
+
+    // Termijn 1: 28 feb + 1 mnd → 28 mrt (geen laatste-dag-regel, want 28 feb ≠ einde maand)
+    expect(result.terms[0].date.getMonth()).toBe(2); // mrt
     expect(result.terms[0].date.getDate()).toBe(28);
   });
 

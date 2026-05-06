@@ -13,9 +13,14 @@ function getMonthName(month: number): string {
   return MONTH_NAMES[month - 1] || month.toString();
 }
 
-// Voegt maanden toe aan een datum. Bij overflow (bijv. 31 jan + 1 mnd) wordt
-// de laatste dag van de doelmaand gebruikt in plaats van doorlopen naar de volgende maand.
+// § 9.5 LI 2008: als de dagtekening de laatste dag van de maand is, valt elke
+// maandtermijn ook op de laatste dag van de betreffende maand.
+// Bij gewone datums: overflow (bijv. 31 jan + 1 mnd) klapt terug op de laatste dag.
 function addMonths(base: Date, months: number): Date {
+  const lastOfBaseMonth = new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate();
+  if (base.getDate() === lastOfBaseMonth) {
+    return new Date(base.getFullYear(), base.getMonth() + months + 1, 0);
+  }
   const d = new Date(base.getFullYear(), base.getMonth() + months, base.getDate());
   if (d.getDate() !== base.getDate()) {
     d.setDate(0);
