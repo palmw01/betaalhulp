@@ -54,7 +54,7 @@ function App() {
       <header className="header-container">
         <div className="content-width">
           <h1>BetaalHulp Belastingaanslag</h1>
-          <p>Hulpmiddel voor het berekenen van uw betaaltermijnen conform de Invorderingswet.</p>
+          <p>Hulpmiddel voor het berekenen van uw betaaltermijnen conform Artikel 9 IW 1990 en § 9.1 Leidraad Invordering 2008.</p>
         </div>
       </header>
 
@@ -65,13 +65,13 @@ function App() {
               <h2>Wanneer moet u betalen?</h2>
               <p>
                 Met dit hulpmiddel berekent u eenvoudig de uiterste betaaldatum(s) van uw belastingaanslag.
-                De berekening is gebaseerd op Artikel 9 van de Invorderingswet 1990.
+                De berekening is gebaseerd op Artikel 9 van de Invorderingswet 1990 en § 9.1 van de Leidraad Invordering 2008.
               </p>
               <p><strong>Houd uw aanslagbiljet bij de hand. U heeft de volgende gegevens nodig:</strong></p>
               <ul>
                 <li>De dagtekening van het aanslagbiljet</li>
                 <li>Het totaalbedrag van de aanslag</li>
-                <li>Het type aanslag (normaal of voorlopig)</li>
+                <li>Het type aanslag (normale aanslag of voorlopige aanslag)</li>
               </ul>
               <div style={{ marginTop: '30px' }}>
                 <button className="btn" onClick={startWizard}>Start berekening</button>
@@ -96,7 +96,8 @@ function App() {
 
       <footer className="content-width">
         <p>
-          Dit hulpmiddel is gebaseerd op de actuele wet- en regelgeving (Artikel 9 IW 1990).
+          Dit hulpmiddel is gebaseerd op Artikel 9 IW 1990 en het begunstigende beleid uit § 9.1 Leidraad Invordering 2008.
+          Dit hulpmiddel is uitsluitend bedoeld voor normale aanslagen en voorlopige aanslagen; voor naheffings- en navorderingsaanslagen gelden andere termijnen.
           Er kunnen geen rechten worden ontleend aan de uitkomsten van deze berekening.
         </p>
       </footer>
