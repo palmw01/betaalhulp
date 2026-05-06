@@ -42,7 +42,7 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
           <option value="NORMAL">Normale aanslag (definitief)</option>
           <option value="PROVISIONAL">Voorlopige aanslag</option>
         </select>
-        <span className="hint">Een voorlopige aanslag ontvangt u meestal aan het begin van het jaar.</span>
+        <span className="hint">Een voorlopige aanslag is een schatting van uw belasting vóórdat de definitieve aanslag is opgelegd.</span>
       </div>
 
       <div className="form-group">
@@ -59,7 +59,7 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
             onChange({ ...data, date: newDate, assessmentYear: yearFromDate });
           }}
         />
-        <span className="hint">De datum waarop de Belastingdienst de aanslag heeft vastgesteld. Bij een voorlopige aanslag wordt het belastingjaar automatisch overgenomen van deze datum.</span>
+        <span className="hint">De datum die op het aanslagbiljet staat vermeld. De verzenddatum of ontvangstdatum is niet bepalend. Bij een voorlopige aanslag wordt het belastingjaar automatisch overgenomen van deze datum.</span>
       </div>
 
       {data.type === 'PROVISIONAL' && (
@@ -78,7 +78,7 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
             }}
           />
           <span className="hint">
-            Het jaar waarover de voorlopige aanslag is opgelegd (staat op uw aanslagbiljet). Pas dit alleen aan bij navorderingsaanslagen over een eerder jaar.
+            Het jaar waarover de voorlopige aanslag is opgelegd (staat op uw aanslagbiljet). Pas dit aan als de dagtekening in een later jaar valt dan het belastingjaar (bijv. een laat opgelegde voorlopige aanslag over het voorgaande jaar).
           </span>
         </div>
       )}
