@@ -17,7 +17,7 @@ betaalhulp/
 └── betaalhulp-app/     React/TypeScript webapplicatie
     └── src/
         ├── logic/
-        │   ├── taxEngine.ts     Kernlogica (Art. 9 IW 1990)
+        │   ├── taxEngine.ts     Kernlogica (Art. 9 IW 1990 + § 9.1 LI 2008)
         │   ├── legalTexts.ts    Wetteksten voor weergave in de UI
         │   └── types.ts         TypeScript-types
         └── components/
@@ -119,9 +119,20 @@ De applicatie is uitgerust voor gebruik als snelkoppeling op het startscherm:
 
 ---
 
+## Scope
+
+Het hulpmiddel ondersteunt uitsluitend:
+
+- **Normale aanslagen** (Art. 9 lid 1 IW 1990) — één termijn, zes weken na dagtekening
+- **Voorlopige aanslagen** (Art. 9 lid 5 IW 1990) — gelijke maandtermijnen
+
+Naheffingsaanslagen en navorderingsaanslagen vallen onder Art. 9 lid 2 IW 1990 (termijn: veertien dagen) en worden niet ondersteund.
+
+---
+
 ## Juridische disclaimer
 
-Dit hulpmiddel is gebaseerd op de actuele wet- en regelgeving (Artikel 9 IW 1990 en § 9.1 LI 2008). Er kunnen **geen rechten worden ontleend** aan de uitkomsten van deze berekening. Raadpleeg bij twijfel de Belastingdienst of een belastingadviseur.
+Dit hulpmiddel is gebaseerd op Artikel 9 IW 1990 en het begunstigende beleid uit § 9.1 Leidraad Invordering 2008. De Leidraad Invordering is beleidsregels van de Staatssecretaris, geen formele wetgeving. Er kunnen **geen rechten worden ontleend** aan de uitkomsten van deze berekening. Raadpleeg bij twijfel de Belastingdienst of een belastingadviseur.
 
 ---
 

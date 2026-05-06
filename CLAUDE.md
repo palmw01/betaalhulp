@@ -47,6 +47,18 @@ Lineaire state machine met drie stappen: `'INTRO' → 'FORM' → 'RESULT'`. Teru
 
 `isCustomBookYear` is alleen relevant voor voorlopige aanslagen; de checkbox wordt alleen getoond als `type === 'PROVISIONAL'` en wordt teruggezet bij typewijziging.
 
+**Scope:** het hulpmiddel ondersteunt uitsluitend normale aanslagen (lid 1) en voorlopige aanslagen (lid 5). Naheffingsaanslagen en navorderingsaanslagen (lid 2: 14 dagen) zijn buiten scope; de footer vermeldt dit expliciet.
+
+### Juridische terminologie in UI-teksten
+
+Houd bij het schrijven of aanpassen van UI-teksten rekening met de volgende distincties:
+
+- **Wet vs. beleid:** Art. 9 IW 1990 is formele wet; § 9.1 LI 2008 is beleidsregels (niet "wet- en regelgeving"). Vermeld beide bronnen apart wanneer beide van toepassing zijn.
+- **Invorderbaarheid vs. betaalverplichting:** De *betaalverplichting* bestaat al vanaf het opleggen van de aanslag. De *vervaldag* is het moment waarop de aanslag *invorderbaar* wordt — d.w.z. het moment waarop de ontvanger dwanginvordering kan starten. Gebruik niet "u moet betalen op" maar "de aanslag wordt invorderbaar op" of "vervaldag (uiterste betaaldatum)".
+- **Vervaldag:** de officiële IW-term voor de vervaldatum van een termijn. De UI toont dit als "Vervaldag (uiterste betaaldatum)" om herkenbaarheid te combineren met juridische precisie.
+- **Voorlopige aanslag:** een aanslag vóór de definitieve vaststelling, opgelegd op basis van geschatte gegevens — géén navorderingsaanslag of naheffingsaanslag.
+- **Afwijkend boekjaar:** van toepassing op belastingplichtigen (ondernemers én rechtspersonen zoals BV's) wiens boekjaar niet samenvalt met het kalenderjaar. Niet beperken tot "ondernemers".
+
 ### Juridische kennisbank (`wetteksten/`, `annotaties/`, `begrippen/`, `regels/`)
 
 Dit is een **Obsidian-vault** met wikilinks (`[[pad/naar/noot]]`). Niet bewerken zonder kennis van de templatestructuur in `annotaties/template.md`, `begrippen/template.md` en `regels/template.md`.
