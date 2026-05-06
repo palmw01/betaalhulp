@@ -27,7 +27,7 @@ npm run build
 
 ### Kwaliteitscontroles
 - **Linting**: `npm run lint`
-- **Testing**: `npm test` (gebruikt Vitest)
+- **Testing**: `npx vitest run` (er is geen `npm test` script)
 
 ## Architectuur
 De applicatie scheidt de UI (React componenten in `src/components`) strikt van de juridische logica (`src/logic`). 

@@ -29,7 +29,7 @@ De kern is `taxEngine.ts` die twee paden implementeert:
 - **`applyLid5`** — voorlopige aanslag: `numTerms = 12 - maandnummer` gelijke termijnen; valt terug op `applyLid1` als `numTerms <= 1`. De laatste termijn van een voorlopige aanslag wordt altijd gecontroleerd via de hulpfunctie **`applyLI91`**.
 
 **Eindejaarsverschuiving (`applyLI91`):**
-Conform § 9.1 Leidraad Invordering 2008 wordt de laatste (of enige) vervaldag van een voorlopige aanslag (gedagtekend in november of eerder) verschoven naar 31 december als de berekende datum anders eerder zou vallen. Bij afwijkende boekjaren wordt de laatste vervaldag steeds op de laatste dag van de maand gesteld. Deze logica is gecentraliseerd in `applyLI91` en wordt toegepast op zowel de meer-termijnregeling als de een-termijnterugvalregel.
+Conform § 9.1 Leidraad Invordering 2008 wordt de laatste (of enige) vervaldag van een voorlopige aanslag (gedagtekend in november of eerder) verschoven naar 31 december als de berekende datum anders eerder zou vallen. Bij afwijkende boekjaren wordt de laatste vervaldag steeds op de laatste dag van de maand gesteld. Deze logica is gecentraliseerd in `applyLI91` en wordt toegepast op zowel de meer-termijnregeling als de een-termijnterugvalregel. `applyLI91` is een **pure functie**: het muteert het meegegeven `result` niet maar geeft altijd een nieuw object terug met gespreade `terms`- en `trace`-arrays.
 
 Elke berekening produceert een `trace: CalculationStep[]` — een geordende audit trail van stap → juridische grondslag → letterlijke wettekst. Dit is een contractvereiste: de UI toont elke stap inclusief uitklapbare wettekst.
 
@@ -37,7 +37,9 @@ Elke berekening produceert een `trace: CalculationStep[]` — een geordende audi
 - `parseDateLocal` in het formulier parseert `<input type="date">` als lokale tijd, niet UTC — dit voorkomt dat `new Date("YYYY-MM-DD")` een dag terugspringt door de UTC-interpretatie van ISO-strings.
 - `addMonths` corrigeert maandoverflow (bijv. 31 jan + 1 mnd = 28/29 feb, niet 3 mrt).
 
-**Termijnverdeling:** belastingaanslagen luiden in hele euro's (`Math.round(amount)`). Elk termijnbedrag wordt naar boven afgerond op hele euro's (`ceil`), waarna het overschot wordt gecorrigeerd door precies `numHigher = totaal − n × (ceil − 1)` termijnen op het hogere bedrag te houden en de rest op `€1` minder. De som is altijd exact gelijk aan het totaal; termijnen verschillen maximaal €1. Dit is een uitvoeringskeuze — pas het algoritme niet aan zonder ook de tests en de trace-tekst bij te werken.
+**Termijnverdeling:** belastingaanslagen luiden in hele euro's (`Math.round(amount)`). Elk termijnbedrag wordt naar boven afgerond op hele euro's (`ceil`), waarna het overschot wordt gecorrigeerd door precies `numHigher = totaal − n × (ceil − 1)` termijnen op het hogere bedrag te houden en de rest op `€1` minder. De som is altijd exact gelijk aan het totaal; termijnen verschillen maximaal €1. Als het afgeronde bedrag kleiner is dan het aantal termijnen, werpt `applyLid5` een fout (€0-termijnen zijn inhoudelijk onzinnig). Dit is een uitvoeringskeuze — pas het algoritme niet aan zonder ook de tests en de trace-tekst bij te werken.
+
+**`isCustom`-check:** `const isCustom = request.isCustomBookYear && request.bookYearEndMonth != null` — gebruik altijd `!= null` (niet truthy) zodat een ontbrekende `bookYearEndMonth` expliciet opgemerkt wordt in plaats van stilzwijgend terug te vallen op het standaardboekjaar.
 
 ### UI-flow (`App.tsx`)
 
