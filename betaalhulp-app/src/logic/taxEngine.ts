@@ -58,6 +58,8 @@ function applyLI91(result: AssessmentResult, request: AssessmentRequest): Assess
   if (lastTermIndex < 0) return result;
 
   const lastTerm = result.terms[lastTermIndex];
+  const newTerms = [...result.terms];
+  const newTrace = [...result.trace];
 
   if (isCustomBookYear) {
     const lastDayOfMonth = new Date(lastTerm.date.getFullYear(), lastTerm.date.getMonth() + 1, 0);
@@ -65,15 +67,18 @@ function applyLI91(result: AssessmentResult, request: AssessmentRequest): Assess
     const isEndBookYear = (lastTerm.date.getMonth() + 1) === bookYearEndMonth;
 
     if (!alreadyLastDay) {
-      lastTerm.date = lastDayOfMonth;
-      lastTerm.rationale = 'Voor afwijkende boekjaren wordt de laatste vervaldag gesteld op de laatste dag van de maand (§ 9.1 Leidraad Invordering 2008).';
+      newTerms[lastTermIndex] = {
+        ...lastTerm,
+        date: lastDayOfMonth,
+        rationale: 'Voor afwijkende boekjaren wordt de laatste vervaldag gesteld op de laatste dag van de maand (§ 9.1 Leidraad Invordering 2008).',
+      };
     }
 
-    result.trace.push({
+    newTrace.push({
       step: `Controle laatste termijn (Afwijkend boekjaar eindigend in ${getMonthName(bookYearEndMonth)})`,
       result: alreadyLastDay
-        ? `Vervaldag bleef staan op de laatste dag van de maand: ${lastTerm.date.toLocaleDateString('nl-NL')}`
-        : `Verschoven naar laatste dag van de maand: ${lastTerm.date.toLocaleDateString('nl-NL')}${isEndBookYear ? ' (Einde boekjaar)' : ''}`,
+        ? `Vervaldag bleef staan op de laatste dag van de maand: ${lastTerm.date.toLocaleDateString('nl-NL')}${isEndBookYear ? ' (Einde boekjaar)' : ''}`
+        : `Verschoven naar laatste dag van de maand: ${lastDayOfMonth.toLocaleDateString('nl-NL')}${isEndBookYear ? ' (Einde boekjaar)' : ''}`,
       legalBasis: '§ 9.1 Leidraad Invordering 2008',
       legalText: LEGAL_TEXTS.LI_2008_9_1_AFWIJKEND,
       sourceFile: 'regels/AR-LI-9-1b.md'
@@ -81,9 +86,12 @@ function applyLI91(result: AssessmentResult, request: AssessmentRequest): Assess
   } else if (date.getMonth() <= 10) { // November of eerder
     const endOfYear = new Date(assessmentYear, 11, 31);
     if (lastTerm.date < endOfYear) {
-      lastTerm.date = endOfYear;
-      lastTerm.rationale = 'De laatste termijn is verschoven naar 31 december op basis van begunstigend beleid (§ 9.1 Leidraad Invordering 2008).';
-      result.trace.push({
+      newTerms[lastTermIndex] = {
+        ...lastTerm,
+        date: endOfYear,
+        rationale: 'De laatste termijn is verschoven naar 31 december op basis van begunstigend beleid (§ 9.1 Leidraad Invordering 2008).',
+      };
+      newTrace.push({
         step: `Verschuiving laatste termijn (Termijn ${lastTermIndex + 1})`,
         result: 'Verschoven naar 31 december (begunstigend beleid)',
         legalBasis: '§ 9.1 Leidraad Invordering 2008',
@@ -93,7 +101,7 @@ function applyLI91(result: AssessmentResult, request: AssessmentRequest): Assess
     }
   }
 
-  return result;
+  return { ...result, terms: newTerms, trace: newTrace };
 }
 
 function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): AssessmentResult {
@@ -127,7 +135,7 @@ function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): Assess
 
   // Dagtekening-in-vaststellingsjaar is vervuld; gebruik het belastingjaar voor de termijnenberekening.
   const month = date.getMonth() + 1; // 1-12
-  const isCustom = request.isCustomBookYear && request.bookYearEndMonth;
+  const isCustom = request.isCustomBookYear && request.bookYearEndMonth != null;
   const endMonth = isCustom ? request.bookYearEndMonth! : 12;
 
   const numTerms = isCustom 
@@ -164,6 +172,12 @@ function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): Assess
   // de som exact gelijk is aan het totaalbedrag (uitvoeringskeuze).
   // Belastingaanslagen luiden in hele euro's; Math.round absorbeert eventuele centafwijkingen.
   const totalEuros = Math.round(amount);
+  if (totalEuros < numTerms) {
+    throw new Error(
+      `Het aanslagbedrag (€${totalEuros}) is lager dan het aantal termijnen (${numTerms}). ` +
+      'Controleer of het bedrag correct is.'
+    );
+  }
   const higherTerm = Math.ceil(totalEuros / numTerms);
   const lowerTerm = higherTerm - 1;
   const numHigher = totalEuros - numTerms * lowerTerm; // 1..numTerms termijnen met higherTerm

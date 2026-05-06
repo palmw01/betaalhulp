@@ -354,6 +354,35 @@ describe('taxEngine', () => {
     expect(dueDate.getDate()).toBe(26);
   });
 
+  it('should throw when totalEuros is less than numTerms', () => {
+    // 5 euro / 11 termijnen → lowerTerm = 0, zinloze €0-termijnen
+    expect(() => calculatePaymentTerms({
+      type: 'PROVISIONAL',
+      date: new Date(2026, 0, 10), // jan → 11 termijnen
+      amount: 5,
+      isCustomBookYear: false,
+      assessmentYear: 2026,
+    })).toThrow('lager dan het aantal termijnen');
+  });
+
+  it('§ 9.1 LI 2008: (Einde boekjaar) ook getoond als vervaldag al op laatste dag staat', () => {
+    // 31 jan 2026 (laatste dag van jan) → § 9.5 LI 2008: alle termijnen op laatste dag.
+    // Laatste termijn (dec) = 31 dec → alreadyLastDay = true, isEndBookYear = true (bookYearEndMonth=12).
+    const result = calculatePaymentTerms({
+      type: 'PROVISIONAL',
+      date: new Date(2026, 0, 31),
+      amount: 1100,
+      isCustomBookYear: true,
+      bookYearEndMonth: 12,
+      assessmentYear: 2026,
+    });
+
+    const step = result.trace.find(s => s.step.includes('Afwijkend boekjaar'));
+    expect(step).toBeDefined();
+    expect(step?.result).toContain('bleef staan op de laatste dag');
+    expect(step?.result).toContain('Einde boekjaar');
+  });
+
   it('should throw when dagtekening is before belastingjaar (lid 7 case)', () => {
     // Aanslag over 2027, maar dagtekening is in 2026 (niet ondersteund)
     expect(() => calculatePaymentTerms({

@@ -59,7 +59,7 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
             onChange({ ...data, date: newDate, assessmentYear: yearFromDate });
           }}
         />
-        <span className="hint">De datum waarop de Belastingdienst de aanslag heeft vastgesteld.</span>
+        <span className="hint">De datum waarop de Belastingdienst de aanslag heeft vastgesteld. Bij een voorlopige aanslag wordt het belastingjaar automatisch overgenomen van deze datum.</span>
       </div>
 
       {data.type === 'PROVISIONAL' && (
@@ -72,10 +72,13 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
             max="2099"
             step="1"
             value={data.assessmentYear}
-            onChange={(e) => onChange({ ...data, assessmentYear: parseInt(e.target.value, 10) || data.assessmentYear })}
+            onChange={(e) => {
+              const parsed = parseInt(e.target.value, 10);
+              onChange({ ...data, assessmentYear: Number.isNaN(parsed) ? data.assessmentYear : parsed });
+            }}
           />
           <span className="hint">
-            Het jaar waarover de voorlopige aanslag is opgelegd (staat op uw aanslagbiljet). Meestal gelijk aan het jaar van de dagtekening.
+            Het jaar waarover de voorlopige aanslag is opgelegd (staat op uw aanslagbiljet). Pas dit alleen aan bij navorderingsaanslagen over een eerder jaar.
           </span>
         </div>
       )}
