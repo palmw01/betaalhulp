@@ -213,6 +213,34 @@ describe('taxEngine', () => {
     expect(result.terms[0].date.getDate()).toBe(28);
   });
 
+  it('art. 9 lid 10: trace vermeldt uitsluiting ATW voor normale aanslag', () => {
+    const result = calculatePaymentTerms({
+      type: 'NORMAL',
+      date: new Date(2026, 4, 15),
+      amount: 1000,
+      isCustomBookYear: false,
+      assessmentYear: 2026,
+    });
+
+    const step = result.trace.find(s => s.step === 'Uitsluiting Algemene termijnenwet');
+    expect(step).toBeDefined();
+    expect(step?.legalBasis).toContain('tiende lid');
+  });
+
+  it('art. 9 lid 10: trace vermeldt uitsluiting ATW voor voorlopige aanslag', () => {
+    const result = calculatePaymentTerms({
+      type: 'PROVISIONAL',
+      date: new Date(2026, 0, 10),
+      amount: 1100,
+      isCustomBookYear: false,
+      assessmentYear: 2026,
+    });
+
+    const step = result.trace.find(s => s.step === 'Uitsluiting Algemene termijnenwet');
+    expect(step).toBeDefined();
+    expect(step?.legalBasis).toContain('tiende lid');
+  });
+
   it('should throw on non-positive amount', () => {
     expect(() => calculatePaymentTerms({
       type: 'NORMAL',

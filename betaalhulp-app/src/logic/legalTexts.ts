@@ -9,5 +9,7 @@ export const LEGAL_TEXTS = {
   
   LI_2008_9_1: "In de gevallen waarin voor voorlopige aanslagen (bedoeld in artikel 9, vijfde lid, van de wet) die zijn gedagtekend in november of eerder, toepassing van de wet er toe zou leiden dat de enige of laatste betalingstermijn eindigt voor 31 december, dan wordt de vervaldag van deze termijn op 31 december gesteld. Bij afwijkende boekjaren wordt de laatste vervaldag steeds op de laatste dag van de maand gesteld.",
 
-  LI_2008_9_1_AFWIJKEND: "Bij afwijkende boekjaren wordt de laatste vervaldag steeds op de laatste dag van de maand gesteld."
+  LI_2008_9_1_AFWIJKEND: "Bij afwijkende boekjaren wordt de laatste vervaldag steeds op de laatste dag van de maand gesteld.",
+
+  ART_9_LID_10: "De Algemene termijnenwet is niet van toepassing op de in de voorgaande leden gestelde termijnen."
 };

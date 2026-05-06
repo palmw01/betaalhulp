@@ -40,6 +40,14 @@ function applyLid1(date: Date, amount: number, trace: CalculationStep[]): Assess
     sourceFile: 'regels/AR-9-1.md'
   });
 
+  trace.push({
+    step: 'Uitsluiting Algemene termijnenwet',
+    result: 'De termijn loopt kalenderstrikt: weekenden en feestdagen verlengen de betaaltermijn niet.',
+    legalBasis: 'Artikel 9, tiende lid, IW 1990',
+    legalText: LEGAL_TEXTS.ART_9_LID_10,
+    sourceFile: 'regels/AR-9-1.md'
+  });
+
   return {
     terms: [{
       date: dueDate,
@@ -190,6 +198,14 @@ function applyLid5(request: AssessmentRequest, trace: CalculationStep[]): Assess
     legalBasis: 'Artikel 9, vijfde lid, tweede volzin, IW 1990',
     legalText: LEGAL_TEXTS.ART_9_LID_5_VOLZIN_2,
     sourceFile: 'regels/AR-9-5a.md'
+  });
+
+  trace.push({
+    step: 'Uitsluiting Algemene termijnenwet',
+    result: 'De vervaldagen lopen kalenderstrikt: weekenden en feestdagen verlengen de termijnen niet.',
+    legalBasis: 'Artikel 9, tiende lid, IW 1990',
+    legalText: LEGAL_TEXTS.ART_9_LID_10,
+    sourceFile: 'regels/AR-9-5c.md'
   });
 
   const terms: PaymentTerm[] = [];
