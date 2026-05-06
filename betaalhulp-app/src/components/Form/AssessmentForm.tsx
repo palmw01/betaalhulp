@@ -110,7 +110,7 @@ const AssessmentForm: React.FC<Props> = ({ data, onChange, onNext, error }) => {
               Afwijkend boekjaar
             </label>
             <span className="hint">
-              Selecteer dit alleen als u een ondernemer bent met een boekjaar dat niet op 1 januari begint.
+              Selecteer dit als uw boekjaar niet samenvalt met het kalenderjaar (1 januari t/m 31 december). Van toepassing voor ondernemers, BV's en andere rechtspersonen met een afwijkend boekjaar.
             </span>
           </div>
 
