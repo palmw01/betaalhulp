@@ -31,7 +31,12 @@ De kern is `taxEngine.ts` die twee paden implementeert:
 **Eindejaarsverschuiving (`applyLI91`):**
 Conform § 9.1 Leidraad Invordering 2008 wordt de laatste (of enige) vervaldag van een voorlopige aanslag (gedagtekend in november of eerder) verschoven naar 31 december als de berekende datum anders eerder zou vallen. Bij afwijkende boekjaren wordt de laatste vervaldag steeds op de laatste dag van de maand gesteld. Deze logica is gecentraliseerd in `applyLI91` en wordt toegepast op zowel de meer-termijnregeling als de een-termijnterugvalregel. `applyLI91` is een **pure functie**: het muteert het meegegeven `result` niet maar geeft altijd een nieuw object terug met gespreade `terms`- en `trace`-arrays.
 
-Elke berekening produceert een `trace: CalculationStep[]` — een geordende audit trail van stap → juridische grondslag → letterlijke wettekst. Dit is een contractvereiste: de UI toont elke stap inclusief uitklapbare wettekst.
+Elke berekening produceert een `trace: CalculationStep[]` — een geordende audit trail van stap → juridische grondslag → letterlijke wettekst. Dit is een contractvereiste: de UI toont elke stap inclusief uitklapbare wettekst. De vaste volgorde per berekeningspad is:
+
+- `applyLid1`: Toepassen hoofdregel → Uitsluiting Algemene termijnenwet → (optioneel: LI 2008-verschuiving via `applyLI91`)
+- `applyLid5`: Controle dagtekening → Berekenen termijnen → (Terugvalregel) → Toepassen termijnregeling → Uitsluiting Algemene termijnenwet → (LI 2008-verschuiving)
+
+**`legalTexts.ts`** bevat de authentieke wetteksten als exacte citaten. Elke sleutel correspondeert met één volzin of lid. Voeg alleen teksten toe die daadwerkelijk in de trace worden getoond; koppel elke nieuwe trace-stap met `legalText: LEGAL_TEXTS.<SLEUTEL>`. Huidige sleutels: `ART_9_LID_1`, `ART_9_LID_5_VOLZIN_1..3`, `ART_9_LID_10`, `LI_2008_9_1`, `LI_2008_9_1_AFWIJKEND`.
 
 **Datumconventies:**
 - `parseDateLocal` in het formulier parseert `<input type="date">` als lokale tijd, niet UTC — dit voorkomt dat `new Date("YYYY-MM-DD")` een dag terugspringt door de UTC-interpretatie van ISO-strings.

@@ -44,6 +44,7 @@ De applicatie implementeert de volgende regels uit Artikel 9 IW 1990 en § 9.1 L
 | **AR-9-5a..f** | Voorlopige aanslag: gelijke termijnen over resterende maanden |
 | **AR-LI-9-1a** | Begunstigende regel: laatste termijn verschoven naar 31 december |
 | **AR-LI-9-1b** | Afwijkend boekjaar: laatste termijn op laatste dag van de maand |
+| **Art. 9 lid 10** | Uitsluiting Algemene termijnenwet: termijnen lopen kalenderstrikt (geen verlenging bij weekenden of feestdagen) |
 
 **Terugvalregel** (Art. 9 lid 5, derde volzin): als de termijnberekening niet meer dan één termijn oplevert (dagtekening in november of december), wordt de hoofdregel (zes weken) toegepast. Ook in dit geval wordt de vervaldag getoetst aan de begunstigende regels uit § 9.1 LI 2008 (verschuiving naar 31 december of laatste dag van de maand).
 
@@ -107,7 +108,7 @@ Dit is een uitvoeringskeuze in verlengde van de wet (Art. 9 lid 5, tweede volzin
 
 ### Audit trail
 
-Elke berekening produceert een `trace`-array met de gevolgde stappen, de juridische grondslag en de letterlijke wettekst. Dit maakt de uitkomst volledig controleerbaar.
+Elke berekening produceert een `trace`-array met de gevolgde stappen, de juridische grondslag en de letterlijke wettekst. Dit maakt de uitkomst volledig controleerbaar. Alle wetteksten zijn opgeslagen in `legalTexts.ts` als exacte citaten uit de authentieke bronnen (IW 1990 en LI 2008).
 
 ### Icons en installatie
 
